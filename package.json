@@ -1,0 +1,23 @@
+{
+  "name": "webtechnologiescw01",
+  "version": "1.0.0",
+  "description": "Web Technologies Coursework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelissaAstbury/WebTechnologiesCW01.git"
+  },
+  "author": "Melissa Peliza",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MelissaAstbury/WebTechnologiesCW01/issues"
+  },
+  "homepage": "https://github.com/MelissaAstbury/WebTechnologiesCW01#readme",
+  "devDependencies": {
+    "eslint": "^8.35.0"
+  }
+}
