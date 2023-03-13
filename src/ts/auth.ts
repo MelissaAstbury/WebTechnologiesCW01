@@ -9,7 +9,7 @@ export const onSignInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    console.log(user);
+    console.log('Signed in with ',user);
   } catch (error) {
     console.error(error);
   }
@@ -17,6 +17,7 @@ export const onSignInWithGoogle = async () => {
 
 // Functionality to log out
 export const onSignOut = () => {
+  console.log('Signed out.')
   signOut(auth);
 };
 
