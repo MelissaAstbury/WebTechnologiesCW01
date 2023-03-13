@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+header {
+  background-color: rgb(166, 166, 166);
+  height: 60px;
+}
+
+header div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+button {
+  width: 160px;
+  min-height: 40px;
+  cursor: pointer;
+  border-radius: 8px;
+  border: none;
+  padding: 6px 12px;
+  background-color: transparent;
+}
+
+nav ul {
+  display: flex;
+  gap: 16px;
+}
+
+nav ul li a {
+  padding: 6px;
+  color: #000;
+}
+
+/* button:hover {
+    background-color: brightness(150%) !important;
+} */
+
+/* 
+    Reusable classes
+*/
+
+.wrapper {
+  max-width: 1280px;
+  margin: 40px auto;
+}

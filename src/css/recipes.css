@@ -1,0 +1,50 @@
+.recipes-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 20px 16px;
+}
+
+.recipe-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  justify-content: end;
+  padding: 12px;
+  height: 240px;
+  border-radius: 12px;
+  color: white;
+}
+
+.recipe-item div {
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  justify-content: end;
+  position: absolute;
+  left:0;
+  bottom:0;
+  background-color: black;
+  width: calc(100% - 24px);
+  border-radius: 0 0 12px 12px;
+}
+
+.recipe-item-image {
+  position: absolute;
+  background-size: contain;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 80%;
+  z-index: -1;
+  border-radius: 12px;
+}
+
+.fa-heart {
+  position: absolute;
+  top: 24px;
+  right: 16px;
+  z-index: 2;
+}

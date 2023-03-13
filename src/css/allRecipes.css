@@ -1,0 +1,25 @@
+.nested-navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nested-navigation button {
+  background-color: rgb(156, 149, 150);
+}
+
+.nested-navigation button:hover, button:focus {
+  /* background-color: brightness(150%); */
+  background-color: rgb(71, 71, 71);
+  color: white;
+}
+
+.allergy-container {
+  display: flex;
+  gap: 12px;
+  justify-content: start;
+}
+
+.allergy-container p {
+  font-weight: 600;
+}
