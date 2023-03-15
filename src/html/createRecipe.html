@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Recipe</title>
+    <meta property="og:title" content="Peliza Recipes Home" />
+    <meta property="og:site_name" content="Peliza Recipes" />
+    <meta property="og:locale" content="en-GB" />
+    <meta property="og:type" content="website" />
+    <meta content="Create your own recipe" name="description" />
+    <meta
+      property="og:description"
+      content="Create your own recipe"
+    />
+    <meta property="og:image" content="img" />
+
+    <link rel="stylesheet" href="../css/index.css" />
+    <link rel="stylesheet" href="../css/createRecipe.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      src="https://kit.fontawesome.com/4efb59b925.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="index.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a class="title" href="./index.html">Peliza Recipes</a>
+        <nav class="navigation">
+          <ul>
+            <li><a href="./allRecipes.html">All Recipes</a></li>
+            <li><a href="./yourRecipes.html">All Recipes</a></li>
+            <li><a href="./favourites.html">All Recipes</a></li>
+            <li><a href="./login.html">Login</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="wrapper section">
+        <h1>Create your own recipe</h1>
+        <form class="form-container">
+            <label for="name" class="label-name">Recipe name:</label><br>
+            <input type="text" id="name" name="name" value=""><br>
+            <label for="ingredients" class="label-name">Ingredients:</label><br>
+            <input type="text" id="ingredients" name="ingredients" value=""><br>
+            <label for="instructions" class="label-name">Instructions:</label><br>
+            <input type="text" id="instructions" name="instructions" value="" class="text-box"><br>
+            <label for="allergies" class="label-name">Allergies:</label><br>
+            <input type="checkbox" id="sharing-policy" name="allergies" value="">Dairy Free<br>
+            <input type="checkbox" id="sharing-policy" name="allergies" value="">Nut Free<br>
+            <label for="sharing-policy" class="label-name">Sharing Policy:</label><br>
+            <input type="checkbox" id="sharing-policy" name="sharing-policy" value="" checked>Public<br>
+            <input type="checkbox" id="sharing-policy" name="sharing-policy" value="">Private<br>
+            <button class="save-btn">Save Recipe</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

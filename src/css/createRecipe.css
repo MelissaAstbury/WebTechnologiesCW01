@@ -1,0 +1,13 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    width: 800px;
+}
+
+.save-btn {
+    background-color: rgb(156, 149, 150);
+}
+
+.text-box {
+    height: 300px;
+}
