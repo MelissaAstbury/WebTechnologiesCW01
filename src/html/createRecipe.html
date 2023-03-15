@@ -17,7 +17,7 @@
     <meta property="og:image" content="img" />
 
     <link rel="stylesheet" href="../css/index.css" />
-    <link rel="stylesheet" href="../css/recipes.css" />
+    <link rel="stylesheet" href="../css/createRecipe.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -48,19 +48,20 @@
     <main>
       <section class="wrapper section">
         <h1>Create your own recipe</h1>
-        <form>
-            <label for="name">Recipe name:</label><br>
+        <form class="form-container">
+            <label for="name" class="label-name">Recipe name:</label><br>
             <input type="text" id="name" name="name" value=""><br>
-            <label for="ingredients">Ingredients:</label><br>
+            <label for="ingredients" class="label-name">Ingredients:</label><br>
             <input type="text" id="ingredients" name="ingredients" value=""><br>
-            <label for="instructions">Instructions:</label><br>
-            <input type="text" id="instructions" name="instructions" value=""><br>
-            <label for="allergies">Allergies:</label><br>
-            <input type="text" id="allergies" name="allergies" value=""><br>
-            <label for="sharing-policy">Sharing Policy:</label><br>
-            <input type="checkbox" id="sharing-policy" name="diary-free" value="">Dairy Free<br>
-            <input type="checkbox" id="sharing-policy" name="nut-free" value="">Nut Free<br>
-            <button>Save Recipe</button>
+            <label for="instructions" class="label-name">Instructions:</label><br>
+            <input type="text" id="instructions" name="instructions" value="" class="text-box"><br>
+            <label for="allergies" class="label-name">Allergies:</label><br>
+            <input type="checkbox" id="sharing-policy" name="allergies" value="">Dairy Free<br>
+            <input type="checkbox" id="sharing-policy" name="allergies" value="">Nut Free<br>
+            <label for="sharing-policy" class="label-name">Sharing Policy:</label><br>
+            <input type="checkbox" id="sharing-policy" name="sharing-policy" value="" checked>Public<br>
+            <input type="checkbox" id="sharing-policy" name="sharing-policy" value="">Private<br>
+            <button class="save-btn">Save Recipe</button>
         </form>
       </section>
     </main>
