@@ -1,7 +1,7 @@
 import { auth, provider } from './firebase-config';
 import {
   signInWithPopup,
-  signOut
+  signOut,
 } from 'firebase/auth';
 
 // Functionality to log in via Google sign in
@@ -20,6 +20,10 @@ export const onSignOut = () => {
   console.log('Signed out.')
   signOut(auth);
 };
+
+export const onGetUser = () => {
+  return auth;
+}
 
 // Specify the element that will trigger the functionlity methods above
 export const loginBtn = document.querySelector('#login') as HTMLElement;
