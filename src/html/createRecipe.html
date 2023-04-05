@@ -10,10 +10,7 @@
     <meta property="og:locale" content="en-GB" />
     <meta property="og:type" content="website" />
     <meta content="Create your own recipe" name="description" />
-    <meta
-      property="og:description"
-      content="Create your own recipe"
-    />
+    <meta property="og:description" content="Create your own recipe" />
     <meta property="og:image" content="img" />
 
     <link rel="stylesheet" href="../css/index.css" />
@@ -29,7 +26,7 @@
       crossorigin="anonymous"
     ></script>
 
-    <script src="index.js" defer></script>
+    <script src="../../dist/index.js" defer></script>
   </head>
   <body>
     <header>
@@ -48,20 +45,58 @@
     <main>
       <section class="wrapper section">
         <h1>Create your own recipe</h1>
-        <form class="form-container">
-            <label for="name" class="label-name">Recipe name:</label><br>
-            <input type="text" id="name" name="name" value=""><br>
-            <label for="ingredients" class="label-name">Ingredients:</label><br>
-            <input type="text" id="ingredients" name="ingredients" value=""><br>
-            <label for="instructions" class="label-name">Instructions:</label><br>
-            <input type="text" id="instructions" name="instructions" value="" class="text-box"><br>
-            <label for="allergies" class="label-name">Allergies:</label><br>
-            <input type="checkbox" id="sharing-policy" name="allergies" value="">Dairy Free<br>
-            <input type="checkbox" id="sharing-policy" name="allergies" value="">Nut Free<br>
-            <label for="sharing-policy" class="label-name">Sharing Policy:</label><br>
-            <input type="checkbox" id="sharing-policy" name="sharing-policy" value="" checked>Public<br>
-            <input type="checkbox" id="sharing-policy" name="sharing-policy" value="">Private<br>
-            <button class="save-btn">Save Recipe</button>
+        <form id="recipe-form" class="form-container">
+          <label for="name" class="label-name"
+            >Recipe name: <input type="text" id="name" name="name" value="Chilli Nachos"
+          /></label>
+          <label for="theme" class="label-name"
+            >Theme: <input type="text" id="theme" name="theme" value="Mexican"
+          /></label>
+          <label for="ingredients" class="label-name"
+            >Ingredients:
+            <input type="text" id="ingredients" name="ingredients" value="Nachos Cheese Beans"
+          /></label>
+          <label for="instructions" class="label-name"
+            >Instructions:
+            <input
+              type="text"
+              id="instructions"
+              name="instructions"
+              value="step1 step2 step3 step4"
+              class="text-box"
+          /></label>
+          <label for="images" class="label-name"
+            >Recipe name: <input type="text" id="images" name="images" value="image1 image2 image3"
+          /></label>
+          <label for="allergies" class="label-name">Allergies:
+          <input
+            type="checkbox"
+            id="dairy-allergy"
+            name="dairy-allergy"
+            value="Dairy"
+          />Dairy Free<br />
+          <input
+            type="checkbox"
+            id="nut-allergy"
+            name="nut-allergy"
+            value="Nut"
+            checked
+          />Nut Free</label>
+          <label for="sharing-policy" class="label-name">Sharing Policy:
+          <input
+            type="checkbox"
+            id="public-sharing"
+            name="public-sharing"
+            value="Public"
+            checked
+          />Public<br />
+          <input
+            type="checkbox"
+            id="private-sharing"
+            name="private-sharing"
+            value="Private"
+          />Private</label>
+          <button class="save-btn" type="submit">Save Recipe</button>
         </form>
       </section>
     </main>

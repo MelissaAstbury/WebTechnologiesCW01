@@ -1,5 +1,6 @@
 // Base of all functions. This file will allow the build to create the 'dist/index.js' file
 import { onSignInWithGoogle, loginBtn, signOutBtn, onSignOut } from './auth';
+import { createRecipeBtn, createRecipe } from "./form";
 
 // Link and specify which functionlity will trigger certain HTML element
 if (loginBtn) {
@@ -8,4 +9,8 @@ if (loginBtn) {
 
 if (signOutBtn) {
   signOutBtn.onclick = onSignOut;
+}
+
+if (createRecipeBtn) {
+  createRecipeBtn.onclick = createRecipe;
 }
