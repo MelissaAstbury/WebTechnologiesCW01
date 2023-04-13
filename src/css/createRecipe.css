@@ -4,10 +4,32 @@
     width: 800px;
 }
 
+.label-name {
+    display: flex;
+    flex-direction: row;
+    padding: 30px;
+}
+
+.image {
+    width: 200px;
+    height: 200px;
+}
+
 .save-btn {
     background-color: rgb(156, 149, 150);
 }
 
-.text-box {
+.image-selection {
+    display: grid;
+    grid-column: 1 / 5;
+    /* flex-direction: column; */
+}
+
+/* .text-box {
     height: 300px;
 }
+
+.recipe-images {
+    width: 200px;
+    height: 200px;
+}  */
