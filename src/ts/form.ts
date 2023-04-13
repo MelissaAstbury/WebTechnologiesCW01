@@ -1,6 +1,9 @@
 import { onGetUser } from './auth';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, ref, update } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
+
+// Get recipe database
+const db = getDatabase();
 
 // Send values to firebase database
 function sendRecipeData(
@@ -13,9 +16,9 @@ function sendRecipeData(
   allergies: string[],
   sharingPolicy: string[]
 ) {
-  const db = getDatabase();
-  set(ref(db, 'recipes'), {
-    id: uuidv4(),
+  const id = uuidv4();
+  update(ref(db,'recipes/' + id), {
+    id,
     publisher,
     name,
     theme,
@@ -85,8 +88,8 @@ export const createRecipe = (e: Event) => {
     // Send values to firebase database
     sendRecipeData(
       publisher!,
-      theme.value,
       name.value,
+      theme.value,
       ingredients.value,
       instructions.value,
       image.value,
