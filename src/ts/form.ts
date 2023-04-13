@@ -1,5 +1,6 @@
 import { onGetUser } from './auth';
 import { getDatabase, ref, set } from 'firebase/database';
+import { v4 as uuidv4 } from 'uuid';
 
 // Send values to firebase database
 function sendRecipeData(
@@ -14,6 +15,7 @@ function sendRecipeData(
 ) {
   const db = getDatabase();
   set(ref(db, 'recipes'), {
+    id: uuidv4(),
     publisher,
     name,
     theme,
