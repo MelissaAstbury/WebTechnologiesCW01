@@ -9,7 +9,7 @@ function sendRecipeData(
   theme: string,
   ingredients: string,
   instructions: string,
-  images: string,
+  image: string,
   allergies: string[],
   sharingPolicy: string[]
 ) {
@@ -21,7 +21,7 @@ function sendRecipeData(
     theme,
     ingredients,
     instructions,
-    images,
+    image,
     allergies,
     sharingPolicy,
     votes: 0,
@@ -52,7 +52,7 @@ export const createRecipe = (e: Event) => {
     const instructions = document.getElementById(
       'instructions'
     ) as HTMLInputElement;
-    const images = ['image 1', 'image 2', 'image 3'];
+    const image = document.querySelector("input[type='radio'][name='food-image']:checked") as HTMLInputElement;
     const dairyAllergy = document.getElementById(
       'dairy-allergy'
     ) as HTMLInputElement;
@@ -65,6 +65,8 @@ export const createRecipe = (e: Event) => {
     const privateSharing = document.getElementById(
       'private-sharing'
     ) as HTMLInputElement;
+
+    // push information into array
     let allergies = [];
     let sharingPolicy = [];
     if (dairyAllergy.checked) {
@@ -87,7 +89,7 @@ export const createRecipe = (e: Event) => {
       name.value,
       ingredients.value,
       instructions.value,
-      images[0],
+      image.value,
       allergies,
       sharingPolicy
     );
