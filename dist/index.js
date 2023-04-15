@@ -15860,6 +15860,7 @@
       const allRecipesElement = document.getElementById("all-recipes");
       const homeRecipesElement = document.getElementById("home-recipes");
       for (const values of Object.values(snapshot.val())) {
+        console.log(values);
         if (allRecipesElement) {
           document.getElementById("all-recipes").innerHTML += `
               <div class="recipe-item">
@@ -15867,7 +15868,7 @@
                   <i class="fa-solid fa-heart fa-lg"></i>
                 </span>
                 <img
-                  src="${values.image}"
+                  src="../../assets/images/${values.image}"
                   alt="Pizza"
                   class="recipe-item-image"
                 />
@@ -15885,7 +15886,7 @@
                   <i class="fa-solid fa-heart fa-lg"></i>
                 </span>
                 <img
-                  src="${values.image}"
+                  src="./assets/images/${values.image}"
                   alt="Pizza"
                   class="recipe-item-image"
                 />
