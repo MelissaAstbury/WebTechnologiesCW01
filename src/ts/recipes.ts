@@ -27,6 +27,7 @@ get(recipesRef)
       const allRecipesElement = document.getElementById('all-recipes');
       const homeRecipesElement = document.getElementById('home-recipes');
       for (const values of Object.values(snapshot.val()) as Irecipe[]) {
+        console.log(values);
         // allRecipes.push(values as Irecipe);
         if (allRecipesElement) {
             document.getElementById('all-recipes')!.innerHTML += `
@@ -35,7 +36,7 @@ get(recipesRef)
                   <i class="fa-solid fa-heart fa-lg"></i>
                 </span>
                 <img
-                  src="${values.image}"
+                  src="../../assets/images/${values.image}"
                   alt="Pizza"
                   class="recipe-item-image"
                 />
@@ -55,7 +56,7 @@ get(recipesRef)
                   <i class="fa-solid fa-heart fa-lg"></i>
                 </span>
                 <img
-                  src="${values.image}"
+                  src="./assets/images/${values.image}"
                   alt="Pizza"
                   class="recipe-item-image"
                 />
