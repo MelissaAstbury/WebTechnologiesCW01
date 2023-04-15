@@ -1598,11 +1598,11 @@
     }
     if (blocked)
       request.addEventListener("blocked", () => blocked());
-    openPromise.then((db2) => {
+    openPromise.then((db3) => {
       if (terminated)
-        db2.addEventListener("close", () => terminated());
+        db3.addEventListener("close", () => terminated());
       if (blocking)
-        db2.addEventListener("versionchange", () => blocking());
+        db3.addEventListener("versionchange", () => blocking());
     }).catch(() => {
     });
     return openPromise;
@@ -1938,10 +1938,10 @@
   function getDbPromise() {
     if (!dbPromise) {
       dbPromise = openDB(DB_NAME, DB_VERSION, {
-        upgrade: (db2, oldVersion) => {
+        upgrade: (db3, oldVersion) => {
           switch (oldVersion) {
             case 0:
-              db2.createObjectStore(STORE_NAME);
+              db3.createObjectStore(STORE_NAME);
           }
         }
       }).catch((e) => {
@@ -1954,8 +1954,8 @@
   }
   async function readHeartbeatsFromIndexedDB(app2) {
     try {
-      const db2 = await getDbPromise();
-      return db2.transaction(STORE_NAME).objectStore(STORE_NAME).get(computeKey(app2));
+      const db3 = await getDbPromise();
+      return db3.transaction(STORE_NAME).objectStore(STORE_NAME).get(computeKey(app2));
     } catch (e) {
       if (e instanceof FirebaseError) {
         logger.warn(e.message);
@@ -1969,8 +1969,8 @@
   }
   async function writeHeartbeatsToIndexedDB(app2, heartbeatObject) {
     try {
-      const db2 = await getDbPromise();
-      const tx = db2.transaction(STORE_NAME, "readwrite");
+      const db3 = await getDbPromise();
+      const tx = db3.transaction(STORE_NAME, "readwrite");
       const objectStore = tx.objectStore(STORE_NAME);
       await objectStore.put(heartbeatObject, computeKey(app2));
       return tx.done;
@@ -2502,6 +2502,19 @@
   var isWindowsStoreApp = function() {
     return typeof Windows === "object" && typeof Windows.UI === "object";
   };
+  function errorForServerCode(code, query) {
+    let reason = "Unknown Error";
+    if (code === "too_big") {
+      reason = "The data requested exceeds the maximum size that can be accessed with a single request.";
+    } else if (code === "permission_denied") {
+      reason = "Client doesn't have permission to access the desired data.";
+    } else if (code === "unavailable") {
+      reason = "The service is unavailable";
+    }
+    const error2 = new Error(code + " at " + query._path.toString() + ": " + reason);
+    error2.code = code.toUpperCase();
+    return error2;
+  }
   var INTEGER_REGEXP_ = new RegExp("^-?(0*)\\d{1,10}$");
   var INTEGER_32_MIN = -2147483648;
   var INTEGER_32_MAX = 2147483647;
@@ -4422,15 +4435,15 @@
       }
     }
     sendGet_(index) {
-      const get = this.outstandingGets_[index];
-      this.sendRequest("g", get.request, (message) => {
+      const get2 = this.outstandingGets_[index];
+      this.sendRequest("g", get2.request, (message) => {
         delete this.outstandingGets_[index];
         this.outstandingGetCount_--;
         if (this.outstandingGetCount_ === 0) {
           this.outstandingGets_ = [];
         }
-        if (get.onComplete) {
-          get.onComplete(message);
+        if (get2.onComplete) {
+          get2.onComplete(message);
         }
       });
     }
@@ -6660,6 +6673,296 @@
   function changeChildMoved(childName, snapshotNode) {
     return { type: "child_moved", snapshotNode, childName };
   }
+  var IndexedFilter = class {
+    constructor(index_) {
+      this.index_ = index_;
+    }
+    updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
+      assert(snap.isIndexed(this.index_), "A node must be indexed if only a child is updated");
+      const oldChild = snap.getImmediateChild(key);
+      if (oldChild.getChild(affectedPath).equals(newChild.getChild(affectedPath))) {
+        if (oldChild.isEmpty() === newChild.isEmpty()) {
+          return snap;
+        }
+      }
+      if (optChangeAccumulator != null) {
+        if (newChild.isEmpty()) {
+          if (snap.hasChild(key)) {
+            optChangeAccumulator.trackChildChange(changeChildRemoved(key, oldChild));
+          } else {
+            assert(snap.isLeafNode(), "A child remove without an old child only makes sense on a leaf node");
+          }
+        } else if (oldChild.isEmpty()) {
+          optChangeAccumulator.trackChildChange(changeChildAdded(key, newChild));
+        } else {
+          optChangeAccumulator.trackChildChange(changeChildChanged(key, newChild, oldChild));
+        }
+      }
+      if (snap.isLeafNode() && newChild.isEmpty()) {
+        return snap;
+      } else {
+        return snap.updateImmediateChild(key, newChild).withIndex(this.index_);
+      }
+    }
+    updateFullNode(oldSnap, newSnap, optChangeAccumulator) {
+      if (optChangeAccumulator != null) {
+        if (!oldSnap.isLeafNode()) {
+          oldSnap.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+            if (!newSnap.hasChild(key)) {
+              optChangeAccumulator.trackChildChange(changeChildRemoved(key, childNode));
+            }
+          });
+        }
+        if (!newSnap.isLeafNode()) {
+          newSnap.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+            if (oldSnap.hasChild(key)) {
+              const oldChild = oldSnap.getImmediateChild(key);
+              if (!oldChild.equals(childNode)) {
+                optChangeAccumulator.trackChildChange(changeChildChanged(key, childNode, oldChild));
+              }
+            } else {
+              optChangeAccumulator.trackChildChange(changeChildAdded(key, childNode));
+            }
+          });
+        }
+      }
+      return newSnap.withIndex(this.index_);
+    }
+    updatePriority(oldSnap, newPriority) {
+      if (oldSnap.isEmpty()) {
+        return ChildrenNode.EMPTY_NODE;
+      } else {
+        return oldSnap.updatePriority(newPriority);
+      }
+    }
+    filtersNodes() {
+      return false;
+    }
+    getIndexedFilter() {
+      return this;
+    }
+    getIndex() {
+      return this.index_;
+    }
+  };
+  var RangedFilter = class {
+    constructor(params) {
+      this.indexedFilter_ = new IndexedFilter(params.getIndex());
+      this.index_ = params.getIndex();
+      this.startPost_ = RangedFilter.getStartPost_(params);
+      this.endPost_ = RangedFilter.getEndPost_(params);
+      this.startIsInclusive_ = !params.startAfterSet_;
+      this.endIsInclusive_ = !params.endBeforeSet_;
+    }
+    getStartPost() {
+      return this.startPost_;
+    }
+    getEndPost() {
+      return this.endPost_;
+    }
+    matches(node) {
+      const isWithinStart = this.startIsInclusive_ ? this.index_.compare(this.getStartPost(), node) <= 0 : this.index_.compare(this.getStartPost(), node) < 0;
+      const isWithinEnd = this.endIsInclusive_ ? this.index_.compare(node, this.getEndPost()) <= 0 : this.index_.compare(node, this.getEndPost()) < 0;
+      return isWithinStart && isWithinEnd;
+    }
+    updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
+      if (!this.matches(new NamedNode(key, newChild))) {
+        newChild = ChildrenNode.EMPTY_NODE;
+      }
+      return this.indexedFilter_.updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator);
+    }
+    updateFullNode(oldSnap, newSnap, optChangeAccumulator) {
+      if (newSnap.isLeafNode()) {
+        newSnap = ChildrenNode.EMPTY_NODE;
+      }
+      let filtered = newSnap.withIndex(this.index_);
+      filtered = filtered.updatePriority(ChildrenNode.EMPTY_NODE);
+      const self2 = this;
+      newSnap.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+        if (!self2.matches(new NamedNode(key, childNode))) {
+          filtered = filtered.updateImmediateChild(key, ChildrenNode.EMPTY_NODE);
+        }
+      });
+      return this.indexedFilter_.updateFullNode(oldSnap, filtered, optChangeAccumulator);
+    }
+    updatePriority(oldSnap, newPriority) {
+      return oldSnap;
+    }
+    filtersNodes() {
+      return true;
+    }
+    getIndexedFilter() {
+      return this.indexedFilter_;
+    }
+    getIndex() {
+      return this.index_;
+    }
+    static getStartPost_(params) {
+      if (params.hasStart()) {
+        const startName = params.getIndexStartName();
+        return params.getIndex().makePost(params.getIndexStartValue(), startName);
+      } else {
+        return params.getIndex().minPost();
+      }
+    }
+    static getEndPost_(params) {
+      if (params.hasEnd()) {
+        const endName = params.getIndexEndName();
+        return params.getIndex().makePost(params.getIndexEndValue(), endName);
+      } else {
+        return params.getIndex().maxPost();
+      }
+    }
+  };
+  var LimitedFilter = class {
+    constructor(params) {
+      this.withinDirectionalStart = (node) => this.reverse_ ? this.withinEndPost(node) : this.withinStartPost(node);
+      this.withinDirectionalEnd = (node) => this.reverse_ ? this.withinStartPost(node) : this.withinEndPost(node);
+      this.withinStartPost = (node) => {
+        const compareRes = this.index_.compare(this.rangedFilter_.getStartPost(), node);
+        return this.startIsInclusive_ ? compareRes <= 0 : compareRes < 0;
+      };
+      this.withinEndPost = (node) => {
+        const compareRes = this.index_.compare(node, this.rangedFilter_.getEndPost());
+        return this.endIsInclusive_ ? compareRes <= 0 : compareRes < 0;
+      };
+      this.rangedFilter_ = new RangedFilter(params);
+      this.index_ = params.getIndex();
+      this.limit_ = params.getLimit();
+      this.reverse_ = !params.isViewFromLeft();
+      this.startIsInclusive_ = !params.startAfterSet_;
+      this.endIsInclusive_ = !params.endBeforeSet_;
+    }
+    updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
+      if (!this.rangedFilter_.matches(new NamedNode(key, newChild))) {
+        newChild = ChildrenNode.EMPTY_NODE;
+      }
+      if (snap.getImmediateChild(key).equals(newChild)) {
+        return snap;
+      } else if (snap.numChildren() < this.limit_) {
+        return this.rangedFilter_.getIndexedFilter().updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator);
+      } else {
+        return this.fullLimitUpdateChild_(snap, key, newChild, source, optChangeAccumulator);
+      }
+    }
+    updateFullNode(oldSnap, newSnap, optChangeAccumulator) {
+      let filtered;
+      if (newSnap.isLeafNode() || newSnap.isEmpty()) {
+        filtered = ChildrenNode.EMPTY_NODE.withIndex(this.index_);
+      } else {
+        if (this.limit_ * 2 < newSnap.numChildren() && newSnap.isIndexed(this.index_)) {
+          filtered = ChildrenNode.EMPTY_NODE.withIndex(this.index_);
+          let iterator;
+          if (this.reverse_) {
+            iterator = newSnap.getReverseIteratorFrom(this.rangedFilter_.getEndPost(), this.index_);
+          } else {
+            iterator = newSnap.getIteratorFrom(this.rangedFilter_.getStartPost(), this.index_);
+          }
+          let count = 0;
+          while (iterator.hasNext() && count < this.limit_) {
+            const next = iterator.getNext();
+            if (!this.withinDirectionalStart(next)) {
+              continue;
+            } else if (!this.withinDirectionalEnd(next)) {
+              break;
+            } else {
+              filtered = filtered.updateImmediateChild(next.name, next.node);
+              count++;
+            }
+          }
+        } else {
+          filtered = newSnap.withIndex(this.index_);
+          filtered = filtered.updatePriority(ChildrenNode.EMPTY_NODE);
+          let iterator;
+          if (this.reverse_) {
+            iterator = filtered.getReverseIterator(this.index_);
+          } else {
+            iterator = filtered.getIterator(this.index_);
+          }
+          let count = 0;
+          while (iterator.hasNext()) {
+            const next = iterator.getNext();
+            const inRange = count < this.limit_ && this.withinDirectionalStart(next) && this.withinDirectionalEnd(next);
+            if (inRange) {
+              count++;
+            } else {
+              filtered = filtered.updateImmediateChild(next.name, ChildrenNode.EMPTY_NODE);
+            }
+          }
+        }
+      }
+      return this.rangedFilter_.getIndexedFilter().updateFullNode(oldSnap, filtered, optChangeAccumulator);
+    }
+    updatePriority(oldSnap, newPriority) {
+      return oldSnap;
+    }
+    filtersNodes() {
+      return true;
+    }
+    getIndexedFilter() {
+      return this.rangedFilter_.getIndexedFilter();
+    }
+    getIndex() {
+      return this.index_;
+    }
+    fullLimitUpdateChild_(snap, childKey, childSnap, source, changeAccumulator) {
+      let cmp;
+      if (this.reverse_) {
+        const indexCmp = this.index_.getCompare();
+        cmp = (a, b) => indexCmp(b, a);
+      } else {
+        cmp = this.index_.getCompare();
+      }
+      const oldEventCache = snap;
+      assert(oldEventCache.numChildren() === this.limit_, "");
+      const newChildNamedNode = new NamedNode(childKey, childSnap);
+      const windowBoundary = this.reverse_ ? oldEventCache.getFirstChild(this.index_) : oldEventCache.getLastChild(this.index_);
+      const inRange = this.rangedFilter_.matches(newChildNamedNode);
+      if (oldEventCache.hasChild(childKey)) {
+        const oldChildSnap = oldEventCache.getImmediateChild(childKey);
+        let nextChild = source.getChildAfterChild(this.index_, windowBoundary, this.reverse_);
+        while (nextChild != null && (nextChild.name === childKey || oldEventCache.hasChild(nextChild.name))) {
+          nextChild = source.getChildAfterChild(this.index_, nextChild, this.reverse_);
+        }
+        const compareNext = nextChild == null ? 1 : cmp(nextChild, newChildNamedNode);
+        const remainsInWindow = inRange && !childSnap.isEmpty() && compareNext >= 0;
+        if (remainsInWindow) {
+          if (changeAccumulator != null) {
+            changeAccumulator.trackChildChange(changeChildChanged(childKey, childSnap, oldChildSnap));
+          }
+          return oldEventCache.updateImmediateChild(childKey, childSnap);
+        } else {
+          if (changeAccumulator != null) {
+            changeAccumulator.trackChildChange(changeChildRemoved(childKey, oldChildSnap));
+          }
+          const newEventCache = oldEventCache.updateImmediateChild(childKey, ChildrenNode.EMPTY_NODE);
+          const nextChildInRange = nextChild != null && this.rangedFilter_.matches(nextChild);
+          if (nextChildInRange) {
+            if (changeAccumulator != null) {
+              changeAccumulator.trackChildChange(changeChildAdded(nextChild.name, nextChild.node));
+            }
+            return newEventCache.updateImmediateChild(nextChild.name, nextChild.node);
+          } else {
+            return newEventCache;
+          }
+        }
+      } else if (childSnap.isEmpty()) {
+        return snap;
+      } else if (inRange) {
+        if (cmp(windowBoundary, newChildNamedNode) >= 0) {
+          if (changeAccumulator != null) {
+            changeAccumulator.trackChildChange(changeChildRemoved(windowBoundary.name, windowBoundary.node));
+            changeAccumulator.trackChildChange(changeChildAdded(childKey, childSnap));
+          }
+          return oldEventCache.updateImmediateChild(childKey, childSnap).updateImmediateChild(windowBoundary.name, ChildrenNode.EMPTY_NODE);
+        } else {
+          return snap;
+        }
+      } else {
+        return snap;
+      }
+    }
+  };
   var QueryParams = class {
     constructor() {
       this.limitSet_ = false;
@@ -6775,6 +7078,15 @@
       return copy;
     }
   };
+  function queryParamsGetNodeFilter(queryParams) {
+    if (queryParams.loadsAllData()) {
+      return new IndexedFilter(queryParams.getIndex());
+    } else if (queryParams.hasLimit()) {
+      return new LimitedFilter(queryParams);
+    } else {
+      return new RangedFilter(queryParams);
+    }
+  }
   function queryParamsToRestQueryStringParameters(queryParams) {
     const qs = {};
     if (queryParams.isDefault()) {
@@ -7181,6 +7493,20 @@
       }
     }
   };
+  var ListenComplete = class {
+    constructor(source, path) {
+      this.source = source;
+      this.path = path;
+      this.type = OperationType.LISTEN_COMPLETE;
+    }
+    operationForChild(childName) {
+      if (pathIsEmpty(this.path)) {
+        return new ListenComplete(this.source, newEmptyPath());
+      } else {
+        return new ListenComplete(this.source, pathPopFront(this.path));
+      }
+    }
+  };
   var Overwrite = class {
     constructor(source, path, snap) {
       this.source = source;
@@ -7252,6 +7578,12 @@
     }
     getNode() {
       return this.node_;
+    }
+  };
+  var EventGenerator = class {
+    constructor(query_) {
+      this.query_ = query_;
+      this.index_ = this.query_._queryParams.getIndex();
     }
   };
   function eventGeneratorGenerateEventsForChanges(eventGenerator, changes, eventCache, eventRegistrations) {
@@ -8042,6 +8374,9 @@
       }
     }
   };
+  function newViewProcessor(filter) {
+    return { filter };
+  }
   function viewProcessorAssertIndexed(viewProcessor, viewCache) {
     assert(viewCache.eventCache.getNode().isIndexed(viewProcessor.filter.getIndex()), "Event snap not indexed");
     assert(viewCache.serverCache.getNode().isIndexed(viewProcessor.filter.getIndex()), "Server snap not indexed");
@@ -8344,6 +8679,33 @@
       return viewCacheUpdateEventSnap(viewCache, newEventCache, complete, viewProcessor.filter.filtersNodes());
     }
   }
+  var View = class {
+    constructor(query_, initialViewCache) {
+      this.query_ = query_;
+      this.eventRegistrations_ = [];
+      const params = this.query_._queryParams;
+      const indexFilter = new IndexedFilter(params.getIndex());
+      const filter = queryParamsGetNodeFilter(params);
+      this.processor_ = newViewProcessor(filter);
+      const initialServerCache = initialViewCache.serverCache;
+      const initialEventCache = initialViewCache.eventCache;
+      const serverSnap = indexFilter.updateFullNode(ChildrenNode.EMPTY_NODE, initialServerCache.getNode(), null);
+      const eventSnap = filter.updateFullNode(ChildrenNode.EMPTY_NODE, initialEventCache.getNode(), null);
+      const newServerCache = new CacheNode(serverSnap, initialServerCache.isFullyInitialized(), indexFilter.filtersNodes());
+      const newEventCache = new CacheNode(eventSnap, initialEventCache.isFullyInitialized(), filter.filtersNodes());
+      this.viewCache_ = newViewCache(newEventCache, newServerCache);
+      this.eventGenerator_ = new EventGenerator(this.query_);
+    }
+    get query() {
+      return this.query_;
+    }
+  };
+  function viewGetServerCache(view) {
+    return view.viewCache_.serverCache.getNode();
+  }
+  function viewGetCompleteNode(view) {
+    return viewCacheGetCompleteEventSnap(view.viewCache_);
+  }
   function viewGetCompleteServerCache(view, path) {
     const cache = viewCacheGetCompleteServerSnap(view.viewCache_);
     if (cache) {
@@ -8352,6 +8714,41 @@
       }
     }
     return null;
+  }
+  function viewIsEmpty(view) {
+    return view.eventRegistrations_.length === 0;
+  }
+  function viewAddEventRegistration(view, eventRegistration) {
+    view.eventRegistrations_.push(eventRegistration);
+  }
+  function viewRemoveEventRegistration(view, eventRegistration, cancelError) {
+    const cancelEvents = [];
+    if (cancelError) {
+      assert(eventRegistration == null, "A cancel should cancel all event registrations.");
+      const path = view.query._path;
+      view.eventRegistrations_.forEach((registration) => {
+        const maybeEvent = registration.createCancelEvent(cancelError, path);
+        if (maybeEvent) {
+          cancelEvents.push(maybeEvent);
+        }
+      });
+    }
+    if (eventRegistration) {
+      let remaining = [];
+      for (let i = 0; i < view.eventRegistrations_.length; ++i) {
+        const existing = view.eventRegistrations_[i];
+        if (!existing.matches(eventRegistration)) {
+          remaining.push(existing);
+        } else if (eventRegistration.hasAnyCallback()) {
+          remaining = remaining.concat(view.eventRegistrations_.slice(i + 1));
+          break;
+        }
+      }
+      view.eventRegistrations_ = remaining;
+    } else {
+      view.eventRegistrations_ = [];
+    }
+    return cancelEvents;
   }
   function viewApplyOperation(view, operation, writesCache, completeServerCache) {
     if (operation.type === OperationType.MERGE && operation.source.queryId !== null) {
@@ -8365,14 +8762,40 @@
     view.viewCache_ = result.viewCache;
     return viewGenerateEventsForChanges_(view, result.changes, result.viewCache.eventCache.getNode(), null);
   }
+  function viewGetInitialEvents(view, registration) {
+    const eventSnap = view.viewCache_.eventCache;
+    const initialChanges = [];
+    if (!eventSnap.getNode().isLeafNode()) {
+      const eventNode = eventSnap.getNode();
+      eventNode.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+        initialChanges.push(changeChildAdded(key, childNode));
+      });
+    }
+    if (eventSnap.isFullyInitialized()) {
+      initialChanges.push(changeValue(eventSnap.getNode()));
+    }
+    return viewGenerateEventsForChanges_(view, initialChanges, eventSnap.getNode(), registration);
+  }
   function viewGenerateEventsForChanges_(view, changes, eventCache, eventRegistration) {
     const registrations = eventRegistration ? [eventRegistration] : view.eventRegistrations_;
     return eventGeneratorGenerateEventsForChanges(view.eventGenerator_, changes, eventCache, registrations);
   }
   var referenceConstructor$1;
+  var SyncPoint = class {
+    constructor() {
+      this.views = /* @__PURE__ */ new Map();
+    }
+  };
   function syncPointSetReferenceConstructor(val) {
     assert(!referenceConstructor$1, "__referenceConstructor has already been defined");
     referenceConstructor$1 = val;
+  }
+  function syncPointGetReferenceConstructor() {
+    assert(referenceConstructor$1, "Reference.ts has not been loaded");
+    return referenceConstructor$1;
+  }
+  function syncPointIsEmpty(syncPoint) {
+    return syncPoint.views.size === 0;
   }
   function syncPointApplyOperation(syncPoint, operation, writesCache, optCompleteServerCache) {
     const queryId = operation.source.queryId;
@@ -8388,6 +8811,75 @@
       return events;
     }
   }
+  function syncPointGetView(syncPoint, query, writesCache, serverCache, serverCacheComplete) {
+    const queryId = query._queryIdentifier;
+    const view = syncPoint.views.get(queryId);
+    if (!view) {
+      let eventCache = writeTreeRefCalcCompleteEventCache(writesCache, serverCacheComplete ? serverCache : null);
+      let eventCacheComplete = false;
+      if (eventCache) {
+        eventCacheComplete = true;
+      } else if (serverCache instanceof ChildrenNode) {
+        eventCache = writeTreeRefCalcCompleteEventChildren(writesCache, serverCache);
+        eventCacheComplete = false;
+      } else {
+        eventCache = ChildrenNode.EMPTY_NODE;
+        eventCacheComplete = false;
+      }
+      const viewCache = newViewCache(new CacheNode(eventCache, eventCacheComplete, false), new CacheNode(serverCache, serverCacheComplete, false));
+      return new View(query, viewCache);
+    }
+    return view;
+  }
+  function syncPointAddEventRegistration(syncPoint, query, eventRegistration, writesCache, serverCache, serverCacheComplete) {
+    const view = syncPointGetView(syncPoint, query, writesCache, serverCache, serverCacheComplete);
+    if (!syncPoint.views.has(query._queryIdentifier)) {
+      syncPoint.views.set(query._queryIdentifier, view);
+    }
+    viewAddEventRegistration(view, eventRegistration);
+    return viewGetInitialEvents(view, eventRegistration);
+  }
+  function syncPointRemoveEventRegistration(syncPoint, query, eventRegistration, cancelError) {
+    const queryId = query._queryIdentifier;
+    const removed = [];
+    let cancelEvents = [];
+    const hadCompleteView = syncPointHasCompleteView(syncPoint);
+    if (queryId === "default") {
+      for (const [viewQueryId, view] of syncPoint.views.entries()) {
+        cancelEvents = cancelEvents.concat(viewRemoveEventRegistration(view, eventRegistration, cancelError));
+        if (viewIsEmpty(view)) {
+          syncPoint.views.delete(viewQueryId);
+          if (!view.query._queryParams.loadsAllData()) {
+            removed.push(view.query);
+          }
+        }
+      }
+    } else {
+      const view = syncPoint.views.get(queryId);
+      if (view) {
+        cancelEvents = cancelEvents.concat(viewRemoveEventRegistration(view, eventRegistration, cancelError));
+        if (viewIsEmpty(view)) {
+          syncPoint.views.delete(queryId);
+          if (!view.query._queryParams.loadsAllData()) {
+            removed.push(view.query);
+          }
+        }
+      }
+    }
+    if (hadCompleteView && !syncPointHasCompleteView(syncPoint)) {
+      removed.push(new (syncPointGetReferenceConstructor())(query._repo, query._path));
+    }
+    return { removed, events: cancelEvents };
+  }
+  function syncPointGetQueryViews(syncPoint) {
+    const result = [];
+    for (const view of syncPoint.views.values()) {
+      if (!view.query._queryParams.loadsAllData()) {
+        result.push(view);
+      }
+    }
+    return result;
+  }
   function syncPointGetCompleteServerCache(syncPoint, path) {
     let serverCache = null;
     for (const view of syncPoint.views.values()) {
@@ -8395,11 +8887,39 @@
     }
     return serverCache;
   }
+  function syncPointViewForQuery(syncPoint, query) {
+    const params = query._queryParams;
+    if (params.loadsAllData()) {
+      return syncPointGetCompleteView(syncPoint);
+    } else {
+      const queryId = query._queryIdentifier;
+      return syncPoint.views.get(queryId);
+    }
+  }
+  function syncPointViewExistsForQuery(syncPoint, query) {
+    return syncPointViewForQuery(syncPoint, query) != null;
+  }
+  function syncPointHasCompleteView(syncPoint) {
+    return syncPointGetCompleteView(syncPoint) != null;
+  }
+  function syncPointGetCompleteView(syncPoint) {
+    for (const view of syncPoint.views.values()) {
+      if (view.query._queryParams.loadsAllData()) {
+        return view;
+      }
+    }
+    return null;
+  }
   var referenceConstructor;
   function syncTreeSetReferenceConstructor(val) {
     assert(!referenceConstructor, "__referenceConstructor has already been defined");
     referenceConstructor = val;
   }
+  function syncTreeGetReferenceConstructor() {
+    assert(referenceConstructor, "Reference.ts has not been loaded");
+    return referenceConstructor;
+  }
+  var syncTreeNextQueryTag_ = 1;
   var SyncTree = class {
     /**
      * @param listenProvider_ - Used by SyncTree to start / stop listening
@@ -8450,6 +8970,64 @@
     const changeTree = ImmutableTree.fromObject(changedChildren);
     return syncTreeApplyOperationToSyncPoints_(syncTree, new Merge(newOperationSourceServer(), path, changeTree));
   }
+  function syncTreeApplyListenComplete(syncTree, path) {
+    return syncTreeApplyOperationToSyncPoints_(syncTree, new ListenComplete(newOperationSourceServer(), path));
+  }
+  function syncTreeApplyTaggedListenComplete(syncTree, path, tag) {
+    const queryKey = syncTreeQueryKeyForTag_(syncTree, tag);
+    if (queryKey) {
+      const r = syncTreeParseQueryKey_(queryKey);
+      const queryPath = r.path, queryId = r.queryId;
+      const relativePath = newRelativePath(queryPath, path);
+      const op = new ListenComplete(newOperationSourceServerTaggedQuery(queryId), relativePath);
+      return syncTreeApplyTaggedOperation_(syncTree, queryPath, op);
+    } else {
+      return [];
+    }
+  }
+  function syncTreeRemoveEventRegistration(syncTree, query, eventRegistration, cancelError, skipListenerDedup = false) {
+    const path = query._path;
+    const maybeSyncPoint = syncTree.syncPointTree_.get(path);
+    let cancelEvents = [];
+    if (maybeSyncPoint && (query._queryIdentifier === "default" || syncPointViewExistsForQuery(maybeSyncPoint, query))) {
+      const removedAndEvents = syncPointRemoveEventRegistration(maybeSyncPoint, query, eventRegistration, cancelError);
+      if (syncPointIsEmpty(maybeSyncPoint)) {
+        syncTree.syncPointTree_ = syncTree.syncPointTree_.remove(path);
+      }
+      const removed = removedAndEvents.removed;
+      cancelEvents = removedAndEvents.events;
+      if (!skipListenerDedup) {
+        const removingDefault = -1 !== removed.findIndex((query2) => {
+          return query2._queryParams.loadsAllData();
+        });
+        const covered = syncTree.syncPointTree_.findOnPath(path, (relativePath, parentSyncPoint) => syncPointHasCompleteView(parentSyncPoint));
+        if (removingDefault && !covered) {
+          const subtree = syncTree.syncPointTree_.subtree(path);
+          if (!subtree.isEmpty()) {
+            const newViews = syncTreeCollectDistinctViewsForSubTree_(subtree);
+            for (let i = 0; i < newViews.length; ++i) {
+              const view = newViews[i], newQuery = view.query;
+              const listener = syncTreeCreateListenerForView_(syncTree, view);
+              syncTree.listenProvider_.startListening(syncTreeQueryForListening_(newQuery), syncTreeTagForQuery(syncTree, newQuery), listener.hashFn, listener.onComplete);
+            }
+          }
+        }
+        if (!covered && removed.length > 0 && !cancelError) {
+          if (removingDefault) {
+            const defaultTag = null;
+            syncTree.listenProvider_.stopListening(syncTreeQueryForListening_(query), defaultTag);
+          } else {
+            removed.forEach((queryToRemove) => {
+              const tagToRemove = syncTree.queryToTagMap.get(syncTreeMakeQueryKey_(queryToRemove));
+              syncTree.listenProvider_.stopListening(syncTreeQueryForListening_(queryToRemove), tagToRemove);
+            });
+          }
+        }
+      }
+      syncTreeRemoveTags_(syncTree, removed);
+    }
+    return cancelEvents;
+  }
   function syncTreeApplyTaggedQueryOverwrite(syncTree, path, snap, tag) {
     const queryKey = syncTreeQueryKeyForTag_(syncTree, tag);
     if (queryKey != null) {
@@ -8475,6 +9053,53 @@
       return [];
     }
   }
+  function syncTreeAddEventRegistration(syncTree, query, eventRegistration, skipSetupListener = false) {
+    const path = query._path;
+    let serverCache = null;
+    let foundAncestorDefaultView = false;
+    syncTree.syncPointTree_.foreachOnPath(path, (pathToSyncPoint, sp) => {
+      const relativePath = newRelativePath(pathToSyncPoint, path);
+      serverCache = serverCache || syncPointGetCompleteServerCache(sp, relativePath);
+      foundAncestorDefaultView = foundAncestorDefaultView || syncPointHasCompleteView(sp);
+    });
+    let syncPoint = syncTree.syncPointTree_.get(path);
+    if (!syncPoint) {
+      syncPoint = new SyncPoint();
+      syncTree.syncPointTree_ = syncTree.syncPointTree_.set(path, syncPoint);
+    } else {
+      foundAncestorDefaultView = foundAncestorDefaultView || syncPointHasCompleteView(syncPoint);
+      serverCache = serverCache || syncPointGetCompleteServerCache(syncPoint, newEmptyPath());
+    }
+    let serverCacheComplete;
+    if (serverCache != null) {
+      serverCacheComplete = true;
+    } else {
+      serverCacheComplete = false;
+      serverCache = ChildrenNode.EMPTY_NODE;
+      const subtree = syncTree.syncPointTree_.subtree(path);
+      subtree.foreachChild((childName, childSyncPoint) => {
+        const completeCache = syncPointGetCompleteServerCache(childSyncPoint, newEmptyPath());
+        if (completeCache) {
+          serverCache = serverCache.updateImmediateChild(childName, completeCache);
+        }
+      });
+    }
+    const viewAlreadyExists = syncPointViewExistsForQuery(syncPoint, query);
+    if (!viewAlreadyExists && !query._queryParams.loadsAllData()) {
+      const queryKey = syncTreeMakeQueryKey_(query);
+      assert(!syncTree.queryToTagMap.has(queryKey), "View does not exist, but we have a tag");
+      const tag = syncTreeGetNextQueryTag_();
+      syncTree.queryToTagMap.set(queryKey, tag);
+      syncTree.tagToQueryMap.set(tag, queryKey);
+    }
+    const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, path);
+    let events = syncPointAddEventRegistration(syncPoint, query, eventRegistration, writesCache, serverCache, serverCacheComplete);
+    if (!viewAlreadyExists && !foundAncestorDefaultView && !skipSetupListener) {
+      const view = syncPointViewForQuery(syncPoint, query);
+      events = events.concat(syncTreeSetupListener_(syncTree, query, view));
+    }
+    return events;
+  }
   function syncTreeCalcCompleteEventCache(syncTree, path, writeIdsToExclude) {
     const includeHiddenSets = true;
     const writeTree = syncTree.pendingWriteTree_;
@@ -8486,6 +9111,26 @@
       }
     });
     return writeTreeCalcCompleteEventCache(writeTree, path, serverCache, writeIdsToExclude, includeHiddenSets);
+  }
+  function syncTreeGetServerValue(syncTree, query) {
+    const path = query._path;
+    let serverCache = null;
+    syncTree.syncPointTree_.foreachOnPath(path, (pathToSyncPoint, sp) => {
+      const relativePath = newRelativePath(pathToSyncPoint, path);
+      serverCache = serverCache || syncPointGetCompleteServerCache(sp, relativePath);
+    });
+    let syncPoint = syncTree.syncPointTree_.get(path);
+    if (!syncPoint) {
+      syncPoint = new SyncPoint();
+      syncTree.syncPointTree_ = syncTree.syncPointTree_.set(path, syncPoint);
+    } else {
+      serverCache = serverCache || syncPointGetCompleteServerCache(syncPoint, newEmptyPath());
+    }
+    const serverCacheComplete = serverCache != null;
+    const serverCacheNode = serverCacheComplete ? new CacheNode(serverCache, true, false) : null;
+    const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, query._path);
+    const view = syncPointGetView(syncPoint, query, writesCache, serverCacheComplete ? serverCacheNode.getNode() : ChildrenNode.EMPTY_NODE, serverCacheComplete);
+    return viewGetCompleteNode(view);
   }
   function syncTreeApplyOperationToSyncPoints_(syncTree, operation) {
     return syncTreeApplyOperationHelper_(
@@ -8538,6 +9183,41 @@
     }
     return events;
   }
+  function syncTreeCreateListenerForView_(syncTree, view) {
+    const query = view.query;
+    const tag = syncTreeTagForQuery(syncTree, query);
+    return {
+      hashFn: () => {
+        const cache = viewGetServerCache(view) || ChildrenNode.EMPTY_NODE;
+        return cache.hash();
+      },
+      onComplete: (status) => {
+        if (status === "ok") {
+          if (tag) {
+            return syncTreeApplyTaggedListenComplete(syncTree, query._path, tag);
+          } else {
+            return syncTreeApplyListenComplete(syncTree, query._path);
+          }
+        } else {
+          const error2 = errorForServerCode(status, query);
+          return syncTreeRemoveEventRegistration(
+            syncTree,
+            query,
+            /*eventRegistration*/
+            null,
+            error2
+          );
+        }
+      }
+    };
+  }
+  function syncTreeTagForQuery(syncTree, query) {
+    const queryKey = syncTreeMakeQueryKey_(query);
+    return syncTree.queryToTagMap.get(queryKey);
+  }
+  function syncTreeMakeQueryKey_(query) {
+    return query._path.toString() + "$" + query._queryIdentifier;
+  }
   function syncTreeQueryKeyForTag_(syncTree, tag) {
     return syncTree.tagToQueryMap.get(tag);
   }
@@ -8554,6 +9234,74 @@
     assert(syncPoint, "Missing sync point for query tag that we're tracking");
     const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, queryPath);
     return syncPointApplyOperation(syncPoint, operation, writesCache, null);
+  }
+  function syncTreeCollectDistinctViewsForSubTree_(subtree) {
+    return subtree.fold((relativePath, maybeChildSyncPoint, childMap) => {
+      if (maybeChildSyncPoint && syncPointHasCompleteView(maybeChildSyncPoint)) {
+        const completeView = syncPointGetCompleteView(maybeChildSyncPoint);
+        return [completeView];
+      } else {
+        let views = [];
+        if (maybeChildSyncPoint) {
+          views = syncPointGetQueryViews(maybeChildSyncPoint);
+        }
+        each(childMap, (_key, childViews) => {
+          views = views.concat(childViews);
+        });
+        return views;
+      }
+    });
+  }
+  function syncTreeQueryForListening_(query) {
+    if (query._queryParams.loadsAllData() && !query._queryParams.isDefault()) {
+      return new (syncTreeGetReferenceConstructor())(query._repo, query._path);
+    } else {
+      return query;
+    }
+  }
+  function syncTreeRemoveTags_(syncTree, queries) {
+    for (let j = 0; j < queries.length; ++j) {
+      const removedQuery = queries[j];
+      if (!removedQuery._queryParams.loadsAllData()) {
+        const removedQueryKey = syncTreeMakeQueryKey_(removedQuery);
+        const removedQueryTag = syncTree.queryToTagMap.get(removedQueryKey);
+        syncTree.queryToTagMap.delete(removedQueryKey);
+        syncTree.tagToQueryMap.delete(removedQueryTag);
+      }
+    }
+  }
+  function syncTreeGetNextQueryTag_() {
+    return syncTreeNextQueryTag_++;
+  }
+  function syncTreeSetupListener_(syncTree, query, view) {
+    const path = query._path;
+    const tag = syncTreeTagForQuery(syncTree, query);
+    const listener = syncTreeCreateListenerForView_(syncTree, view);
+    const events = syncTree.listenProvider_.startListening(syncTreeQueryForListening_(query), tag, listener.hashFn, listener.onComplete);
+    const subtree = syncTree.syncPointTree_.subtree(path);
+    if (tag) {
+      assert(!syncPointHasCompleteView(subtree.value), "If we're adding a query, it shouldn't be shadowed");
+    } else {
+      const queriesToStop = subtree.fold((relativePath, maybeChildSyncPoint, childMap) => {
+        if (!pathIsEmpty(relativePath) && maybeChildSyncPoint && syncPointHasCompleteView(maybeChildSyncPoint)) {
+          return [syncPointGetCompleteView(maybeChildSyncPoint).query];
+        } else {
+          let queries = [];
+          if (maybeChildSyncPoint) {
+            queries = queries.concat(syncPointGetQueryViews(maybeChildSyncPoint).map((view2) => view2.query));
+          }
+          each(childMap, (_key, childQueries) => {
+            queries = queries.concat(childQueries);
+          });
+          return queries;
+        }
+      });
+      for (let i = 0; i < queriesToStop.length; ++i) {
+        const queryToStop = queriesToStop[i];
+        syncTree.listenProvider_.stopListening(syncTreeQueryForListening_(queryToStop), syncTreeTagForQuery(syncTree, queryToStop));
+      }
+    }
+    return events;
   }
   var ExistingValueProvider = class {
     constructor(node_) {
@@ -9074,6 +9822,29 @@
   function repoGetNextWriteId(repo) {
     return repo.nextWriteId_++;
   }
+  function repoGetValue(repo, query, eventRegistration) {
+    const cached = syncTreeGetServerValue(repo.serverSyncTree_, query);
+    if (cached != null) {
+      return Promise.resolve(cached);
+    }
+    return repo.server_.get(query).then((payload) => {
+      const node = nodeFromJSON(payload).withIndex(query._queryParams.getIndex());
+      syncTreeAddEventRegistration(repo.serverSyncTree_, query, eventRegistration, true);
+      let events;
+      if (query._queryParams.loadsAllData()) {
+        events = syncTreeApplyServerOverwrite(repo.serverSyncTree_, query._path, node);
+      } else {
+        const tag = syncTreeTagForQuery(repo.serverSyncTree_, query);
+        events = syncTreeApplyTaggedQueryOverwrite(repo.serverSyncTree_, query._path, node, tag);
+      }
+      eventQueueRaiseEventsForChangedPath(repo.eventQueue_, query._path, events);
+      syncTreeRemoveEventRegistration(repo.serverSyncTree_, query, eventRegistration, null, true);
+      return node;
+    }, (err) => {
+      repoLog(repo, "get for query " + stringify(query) + " failed: " + err);
+      return Promise.reject(new Error(err));
+    });
+  }
   function repoUpdate(repo, path, childrenToMerge, onComplete) {
     repoLog(repo, "update", { path: path.toString(), value: childrenToMerge });
     let empty = true;
@@ -9556,6 +10327,75 @@
       return id;
     };
   }();
+  var DataEvent = class {
+    /**
+     * @param eventType - One of: value, child_added, child_changed, child_moved, child_removed
+     * @param eventRegistration - The function to call to with the event data. User provided
+     * @param snapshot - The data backing the event
+     * @param prevName - Optional, the name of the previous child for child_* events.
+     */
+    constructor(eventType, eventRegistration, snapshot, prevName) {
+      this.eventType = eventType;
+      this.eventRegistration = eventRegistration;
+      this.snapshot = snapshot;
+      this.prevName = prevName;
+    }
+    getPath() {
+      const ref2 = this.snapshot.ref;
+      if (this.eventType === "value") {
+        return ref2._path;
+      } else {
+        return ref2.parent._path;
+      }
+    }
+    getEventType() {
+      return this.eventType;
+    }
+    getEventRunner() {
+      return this.eventRegistration.getEventRunner(this);
+    }
+    toString() {
+      return this.getPath().toString() + ":" + this.eventType + ":" + stringify(this.snapshot.exportVal());
+    }
+  };
+  var CancelEvent = class {
+    constructor(eventRegistration, error2, path) {
+      this.eventRegistration = eventRegistration;
+      this.error = error2;
+      this.path = path;
+    }
+    getPath() {
+      return this.path;
+    }
+    getEventType() {
+      return "cancel";
+    }
+    getEventRunner() {
+      return this.eventRegistration.getEventRunner(this);
+    }
+    toString() {
+      return this.path.toString() + ":cancel";
+    }
+  };
+  var CallbackContext = class {
+    constructor(snapshotCallback, cancelCallback) {
+      this.snapshotCallback = snapshotCallback;
+      this.cancelCallback = cancelCallback;
+    }
+    onValue(expDataSnapshot, previousChildName) {
+      this.snapshotCallback.call(null, expDataSnapshot, previousChildName);
+    }
+    onCancel(error2) {
+      assert(this.hasCancelCallback, "Raising a cancel event on a listener with no cancel callback");
+      return this.cancelCallback.call(null, error2);
+    }
+    get hasCancelCallback() {
+      return !!this.cancelCallback;
+    }
+    matches(other) {
+      return this.snapshotCallback === other.snapshotCallback || this.snapshotCallback.userCallback !== void 0 && this.snapshotCallback.userCallback === other.snapshotCallback.userCallback && this.snapshotCallback.context === other.snapshotCallback.context;
+    }
+  };
   var QueryImpl = class {
     /**
      * @hideconstructor
@@ -9621,10 +10461,165 @@
       return ref2;
     }
   };
-  function ref(db2, path) {
-    db2 = getModularInstance(db2);
-    db2._checkNotDeleted("ref");
-    return path !== void 0 ? child(db2._root, path) : db2._root;
+  var DataSnapshot = class {
+    /**
+     * @param _node - A SnapshotNode to wrap.
+     * @param ref - The location this snapshot came from.
+     * @param _index - The iteration order for this snapshot
+     * @hideconstructor
+     */
+    constructor(_node, ref2, _index) {
+      this._node = _node;
+      this.ref = ref2;
+      this._index = _index;
+    }
+    /**
+     * Gets the priority value of the data in this `DataSnapshot`.
+     *
+     * Applications need not use priority but can order collections by
+     * ordinary properties (see
+     * {@link https://firebase.google.com/docs/database/web/lists-of-data#sorting_and_filtering_data |Sorting and filtering data}
+     * ).
+     */
+    get priority() {
+      return this._node.getPriority().val();
+    }
+    /**
+     * The key (last part of the path) of the location of this `DataSnapshot`.
+     *
+     * The last token in a Database location is considered its key. For example,
+     * "ada" is the key for the /users/ada/ node. Accessing the key on any
+     * `DataSnapshot` will return the key for the location that generated it.
+     * However, accessing the key on the root URL of a Database will return
+     * `null`.
+     */
+    get key() {
+      return this.ref.key;
+    }
+    /** Returns the number of child properties of this `DataSnapshot`. */
+    get size() {
+      return this._node.numChildren();
+    }
+    /**
+     * Gets another `DataSnapshot` for the location at the specified relative path.
+     *
+     * Passing a relative path to the `child()` method of a DataSnapshot returns
+     * another `DataSnapshot` for the location at the specified relative path. The
+     * relative path can either be a simple child name (for example, "ada") or a
+     * deeper, slash-separated path (for example, "ada/name/first"). If the child
+     * location has no data, an empty `DataSnapshot` (that is, a `DataSnapshot`
+     * whose value is `null`) is returned.
+     *
+     * @param path - A relative path to the location of child data.
+     */
+    child(path) {
+      const childPath = new Path(path);
+      const childRef = child(this.ref, path);
+      return new DataSnapshot(this._node.getChild(childPath), childRef, PRIORITY_INDEX);
+    }
+    /**
+     * Returns true if this `DataSnapshot` contains any data. It is slightly more
+     * efficient than using `snapshot.val() !== null`.
+     */
+    exists() {
+      return !this._node.isEmpty();
+    }
+    /**
+     * Exports the entire contents of the DataSnapshot as a JavaScript object.
+     *
+     * The `exportVal()` method is similar to `val()`, except priority information
+     * is included (if available), making it suitable for backing up your data.
+     *
+     * @returns The DataSnapshot's contents as a JavaScript value (Object,
+     *   Array, string, number, boolean, or `null`).
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    exportVal() {
+      return this._node.val(true);
+    }
+    /**
+     * Enumerates the top-level children in the `DataSnapshot`.
+     *
+     * Because of the way JavaScript objects work, the ordering of data in the
+     * JavaScript object returned by `val()` is not guaranteed to match the
+     * ordering on the server nor the ordering of `onChildAdded()` events. That is
+     * where `forEach()` comes in handy. It guarantees the children of a
+     * `DataSnapshot` will be iterated in their query order.
+     *
+     * If no explicit `orderBy*()` method is used, results are returned
+     * ordered by key (unless priorities are used, in which case, results are
+     * returned by priority).
+     *
+     * @param action - A function that will be called for each child DataSnapshot.
+     * The callback can return true to cancel further enumeration.
+     * @returns true if enumeration was canceled due to your callback returning
+     * true.
+     */
+    forEach(action) {
+      if (this._node.isLeafNode()) {
+        return false;
+      }
+      const childrenNode = this._node;
+      return !!childrenNode.forEachChild(this._index, (key, node) => {
+        return action(new DataSnapshot(node, child(this.ref, key), PRIORITY_INDEX));
+      });
+    }
+    /**
+     * Returns true if the specified child path has (non-null) data.
+     *
+     * @param path - A relative path to the location of a potential child.
+     * @returns `true` if data exists at the specified child path; else
+     *  `false`.
+     */
+    hasChild(path) {
+      const childPath = new Path(path);
+      return !this._node.getChild(childPath).isEmpty();
+    }
+    /**
+     * Returns whether or not the `DataSnapshot` has any non-`null` child
+     * properties.
+     *
+     * You can use `hasChildren()` to determine if a `DataSnapshot` has any
+     * children. If it does, you can enumerate them using `forEach()`. If it
+     * doesn't, then either this snapshot contains a primitive value (which can be
+     * retrieved with `val()`) or it is empty (in which case, `val()` will return
+     * `null`).
+     *
+     * @returns true if this snapshot has any children; else false.
+     */
+    hasChildren() {
+      if (this._node.isLeafNode()) {
+        return false;
+      } else {
+        return !this._node.isEmpty();
+      }
+    }
+    /**
+     * Returns a JSON-serializable representation of this object.
+     */
+    toJSON() {
+      return this.exportVal();
+    }
+    /**
+     * Extracts a JavaScript value from a `DataSnapshot`.
+     *
+     * Depending on the data in a `DataSnapshot`, the `val()` method may return a
+     * scalar type (string, number, or boolean), an array, or an object. It may
+     * also return null, indicating that the `DataSnapshot` is empty (contains no
+     * data).
+     *
+     * @returns The DataSnapshot's contents as a JavaScript value (Object,
+     *   Array, string, number, boolean, or `null`).
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    val() {
+      return this._node.val();
+    }
+  };
+  function ref(db3, path) {
+    db3 = getModularInstance(db3);
+    db3._checkNotDeleted("ref");
+    return path !== void 0 ? child(db3._root, path) : db3._root;
   }
   function child(parent, path) {
     parent = getModularInstance(parent);
@@ -9642,6 +10637,53 @@
     }));
     return deferred.promise;
   }
+  function get(query) {
+    query = getModularInstance(query);
+    const callbackContext = new CallbackContext(() => {
+    });
+    const container = new ValueEventRegistration(callbackContext);
+    return repoGetValue(query._repo, query, container).then((node) => {
+      return new DataSnapshot(node, new ReferenceImpl(query._repo, query._path), query._queryParams.getIndex());
+    });
+  }
+  var ValueEventRegistration = class {
+    constructor(callbackContext) {
+      this.callbackContext = callbackContext;
+    }
+    respondsTo(eventType) {
+      return eventType === "value";
+    }
+    createEvent(change, query) {
+      const index = query._queryParams.getIndex();
+      return new DataEvent("value", this, new DataSnapshot(change.snapshotNode, new ReferenceImpl(query._repo, query._path), index));
+    }
+    getEventRunner(eventData) {
+      if (eventData.getEventType() === "cancel") {
+        return () => this.callbackContext.onCancel(eventData.error);
+      } else {
+        return () => this.callbackContext.onValue(eventData.snapshot, null);
+      }
+    }
+    createCancelEvent(error2, path) {
+      if (this.callbackContext.hasCancelCallback) {
+        return new CancelEvent(this, error2, path);
+      } else {
+        return null;
+      }
+    }
+    matches(other) {
+      if (!(other instanceof ValueEventRegistration)) {
+        return false;
+      } else if (!other.callbackContext || !this.callbackContext) {
+        return true;
+      } else {
+        return other.callbackContext.matches(this.callbackContext);
+      }
+    }
+    hasAnyCallback() {
+      return this.callbackContext !== null;
+    }
+  };
   syncPointSetReferenceConstructor(ReferenceImpl);
   syncTreeSetReferenceConstructor(ReferenceImpl);
   var FIREBASE_DATABASE_EMULATOR_HOST_VAR = "FIREBASE_DATABASE_EMULATOR_HOST";
@@ -9754,24 +10796,24 @@
     }
   };
   function getDatabase(app2 = getApp(), url) {
-    const db2 = _getProvider(app2, "database").getImmediate({
+    const db3 = _getProvider(app2, "database").getImmediate({
       identifier: url
     });
-    if (!db2._instanceStarted) {
+    if (!db3._instanceStarted) {
       const emulator = getDefaultEmulatorHostnameAndPort("database");
       if (emulator) {
-        connectDatabaseEmulator(db2, ...emulator);
+        connectDatabaseEmulator(db3, ...emulator);
       }
     }
-    return db2;
+    return db3;
   }
-  function connectDatabaseEmulator(db2, host, port, options = {}) {
-    db2 = getModularInstance(db2);
-    db2._checkNotDeleted("useEmulator");
-    if (db2._instanceStarted) {
+  function connectDatabaseEmulator(db3, host, port, options = {}) {
+    db3 = getModularInstance(db3);
+    db3._checkNotDeleted("useEmulator");
+    if (db3._instanceStarted) {
       fatal("Cannot call useEmulator() after instance has already been initialized.");
     }
-    const repo = db2._repoInternal;
+    const repo = db3._repoInternal;
     let tokenProvider = void 0;
     if (repo.repoInfo_.nodeAdmin) {
       if (options.mockUserToken) {
@@ -9779,7 +10821,7 @@
       }
       tokenProvider = new EmulatorTokenProvider(EmulatorTokenProvider.OWNER);
     } else if (options.mockUserToken) {
-      const token = typeof options.mockUserToken === "string" ? options.mockUserToken : createMockUserToken(options.mockUserToken, db2.app.options.projectId);
+      const token = typeof options.mockUserToken === "string" ? options.mockUserToken : createMockUserToken(options.mockUserToken, db3.app.options.projectId);
       tokenProvider = new EmulatorTokenProvider(token);
     }
     repoManagerApplyEmulatorSettings(repo, host, port, tokenProvider);
@@ -13044,8 +14086,8 @@
       });
     }
   };
-  function getObjectStore(db2, isReadWrite) {
-    return db2.transaction([DB_OBJECTSTORE_NAME], isReadWrite ? "readwrite" : "readonly").objectStore(DB_OBJECTSTORE_NAME);
+  function getObjectStore(db3, isReadWrite) {
+    return db3.transaction([DB_OBJECTSTORE_NAME], isReadWrite ? "readwrite" : "readonly").objectStore(DB_OBJECTSTORE_NAME);
   }
   function _deleteDatabase() {
     const request = indexedDB.deleteDatabase(DB_NAME2);
@@ -13058,39 +14100,39 @@
         reject(request.error);
       });
       request.addEventListener("upgradeneeded", () => {
-        const db2 = request.result;
+        const db3 = request.result;
         try {
-          db2.createObjectStore(DB_OBJECTSTORE_NAME, { keyPath: DB_DATA_KEYPATH });
+          db3.createObjectStore(DB_OBJECTSTORE_NAME, { keyPath: DB_DATA_KEYPATH });
         } catch (e) {
           reject(e);
         }
       });
       request.addEventListener("success", async () => {
-        const db2 = request.result;
-        if (!db2.objectStoreNames.contains(DB_OBJECTSTORE_NAME)) {
-          db2.close();
+        const db3 = request.result;
+        if (!db3.objectStoreNames.contains(DB_OBJECTSTORE_NAME)) {
+          db3.close();
           await _deleteDatabase();
           resolve(await _openDatabase());
         } else {
-          resolve(db2);
+          resolve(db3);
         }
       });
     });
   }
-  async function _putObject(db2, key, value) {
-    const request = getObjectStore(db2, true).put({
+  async function _putObject(db3, key, value) {
+    const request = getObjectStore(db3, true).put({
       [DB_DATA_KEYPATH]: key,
       value
     });
     return new DBPromise(request).toPromise();
   }
-  async function getObject(db2, key) {
-    const request = getObjectStore(db2, false).get(key);
+  async function getObject(db3, key) {
+    const request = getObjectStore(db3, false).get(key);
     const data = await new DBPromise(request).toPromise();
     return data === void 0 ? null : data.value;
   }
-  function _deleteObject(db2, key) {
-    const request = getObjectStore(db2, true).delete(key);
+  function _deleteObject(db3, key) {
+    const request = getObjectStore(db3, true).delete(key);
     return new DBPromise(request).toPromise();
   }
   var _POLLING_INTERVAL_MS = 800;
@@ -13122,8 +14164,8 @@
       let numAttempts = 0;
       while (true) {
         try {
-          const db2 = await this._openDb();
-          return await op(db2);
+          const db3 = await this._openDb();
+          return await op(db3);
         } catch (e) {
           if (numAttempts++ > _TRANSACTION_RETRY_COUNT) {
             throw e;
@@ -13219,9 +14261,9 @@
         if (!indexedDB) {
           return false;
         }
-        const db2 = await _openDatabase();
-        await _putObject(db2, STORAGE_AVAILABLE_KEY, "1");
-        await _deleteObject(db2, STORAGE_AVAILABLE_KEY);
+        const db3 = await _openDatabase();
+        await _putObject(db3, STORAGE_AVAILABLE_KEY, "1");
+        await _deleteObject(db3, STORAGE_AVAILABLE_KEY);
         return true;
       } catch (_a2) {
       }
@@ -13237,26 +14279,26 @@
     }
     async _set(key, value) {
       return this._withPendingWrite(async () => {
-        await this._withRetries((db2) => _putObject(db2, key, value));
+        await this._withRetries((db3) => _putObject(db3, key, value));
         this.localCache[key] = value;
         return this.notifyServiceWorker(key);
       });
     }
     async _get(key) {
-      const obj = await this._withRetries((db2) => getObject(db2, key));
+      const obj = await this._withRetries((db3) => getObject(db3, key));
       this.localCache[key] = obj;
       return obj;
     }
     async _remove(key) {
       return this._withPendingWrite(async () => {
-        await this._withRetries((db2) => _deleteObject(db2, key));
+        await this._withRetries((db3) => _deleteObject(db3, key));
         delete this.localCache[key];
         return this.notifyServiceWorker(key);
       });
     }
     async _poll() {
-      const result = await this._withRetries((db2) => {
-        const getAllRequest = getObjectStore(db2, false).getAll();
+      const result = await this._withRetries((db3) => {
+        const getAllRequest = getObjectStore(db3, false).getAll();
         return new DBPromise(getAllRequest).toPromise();
       });
       if (!result) {
@@ -14809,6 +15851,63 @@
     "#save-btn"
   );
 
+  // src/ts/recipes.ts
+  var db2 = getDatabase();
+  var recipesRef = ref(db2, "recipes");
+  get(recipesRef).then((snapshot) => {
+    if (snapshot.val()) {
+      let index = 0;
+      const allRecipesElement = document.getElementById("all-recipes");
+      const homeRecipesElement = document.getElementById("home-recipes");
+      for (const values of Object.values(snapshot.val())) {
+        if (allRecipesElement) {
+          document.getElementById("all-recipes").innerHTML += `
+              <div class="recipe-item">
+                <span style="color: rgb(212, 42, 12)">
+                  <i class="fa-solid fa-heart fa-lg"></i>
+                </span>
+                <img
+                  src="${values.image}"
+                  alt="Pizza"
+                  class="recipe-item-image"
+                />
+                <div>
+                  <h3>${values.name}</h3>
+                  <p>Time: 30mins</p>
+                </div>
+              </div>
+            `;
+        }
+        if (homeRecipesElement && index < 9) {
+          document.getElementById("home-recipes").innerHTML += `
+              <div class="recipe-item">
+                <span style="color: rgb(212, 42, 12)">
+                  <i class="fa-solid fa-heart fa-lg"></i>
+                </span>
+                <img
+                  src="${values.image}"
+                  alt="Pizza"
+                  class="recipe-item-image"
+                />
+                <div>
+                  <h3>${values.name}</h3>
+                  <p>Time: 30mins</p>
+                </div>
+              </div>
+            `;
+        }
+        index++;
+      }
+      document.getElementById("loading-spinner").style.display = "none";
+    }
+  }).catch((err) => {
+    document.getElementById("loading-spinner").style.display = "none";
+    document.getElementById("all-recipes").innerHTML += `
+      <h2>Sorry there has been an error fetching all recipes.</h2>
+    `;
+    console.error(err);
+  });
+
   // src/ts/index.ts
   if (loginBtn) {
     loginBtn.onclick = onSignInWithGoogle;
@@ -15205,8 +16304,6 @@ firebase/app/dist/esm/index.esm.js:
    * See the License for the specific language governing permissions and
    * limitations under the License.
    *)
-
-@firebase/database/dist/index.esm2017.js:
   (**
    * @license
    * Copyright 2021 Google LLC
@@ -15223,22 +16320,6 @@ firebase/app/dist/esm/index.esm.js:
    * See the License for the specific language governing permissions and
    * limitations under the License.
    *)
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
 
 @firebase/database/dist/index.esm2017.js:
   (**
@@ -15329,188 +16410,6 @@ firebase/app/dist/esm/index.esm.js:
    * See the License for the specific language governing permissions and
    * limitations under the License.
    *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *   http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
-   *)
-
-@firebase/database/dist/index.esm2017.js:
   (**
    * @license
    * Copyright 2021 Google LLC

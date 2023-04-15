@@ -10,10 +10,7 @@
     <meta property="og:locale" content="en-GB" />
     <meta property="og:type" content="website" />
     <meta content="Browse all receipes" name="description" />
-    <meta
-      property="og:description"
-      content="Browse all receipes"
-    />
+    <meta property="og:description" content="Browse all receipes" />
     <meta property="og:image" content="img" />
 
     <link rel="stylesheet" href="../css/index.css" />
@@ -60,160 +57,17 @@
         </div>
         <div class="allergy-container">
           <p>Allergies:</p>
-          <label for="nut-filter">Nut
+          <label for="nut-filter"
+            >Nut
             <input name="nut-filter" type="checkbox" />
           </label>
-          <label for="dairy-filter">Dairy
+          <label for="dairy-filter"
+            >Dairy
             <input name="dairy-filter" type="checkbox" />
           </label>
         </div>
-        <article class="recipes-container">
-          <div class="recipe-item">
-            <span style="color: rgb(212, 42, 12)">
-              <i class="fa-solid fa-heart fa-lg"></i>
-            </span>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="../../assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
+        <article class="recipes-container" id="all-recipes">
+          <span class="loader" id="loading-spinner"></span>
         </article>
       </section>
     </main>
