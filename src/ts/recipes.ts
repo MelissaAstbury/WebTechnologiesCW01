@@ -23,7 +23,6 @@ const allRecipesElement = document.getElementById('all-recipes');
 const homeRecipesElement = document.getElementById('home-recipes');
 const yourRecipesElement = document.getElementById('your-recipes');
 const recipeContainer = document.getElementById('recipe-container');
-const shareBtn = document.getElementById("#share-button");
 let shareData = {
   title: '',
   text: '',
@@ -31,23 +30,12 @@ let shareData = {
 };
 export const allRecipes: Irecipe[] = [];
 
-if (recipeContainer && shareBtn) {
-  // Share must be triggered by "user activation"
-  shareBtn.addEventListener("click", async () => {
-    try {
-      await navigator.share(shareData);
-    } catch (err) {
-      console.warn(`Error: ${err}`);
-    }
-  });
-}
-
 get(recipesRef)
   .then((snapshot) => {
     if (snapshot.val()) {
       let index = 0;
       for (const recipe of Object.values(snapshot.val()) as Irecipe[]) {
-        // This will render all recipes on the all recipes page. 
+        // This will render all recipes on the all recipes page.
         if (allRecipesElement) {
           document.getElementById('all-recipes')!.innerHTML += `
               <div class="recipe-item">
@@ -77,7 +65,7 @@ get(recipesRef)
                 <div>
                   <h3>${recipe.name}</h3>
                   <p>Theme: ${recipe.theme}</p>
-                  <a href="./recipe.html?id=${recipe.id}">View</a>
+                  <a href="./src/html/recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
@@ -101,7 +89,7 @@ get(recipesRef)
             `;
         }
 
-        // This will render the singular reciep which is pushed to the path URL.
+        // This will render the singular recipe which is pushed to the path URL.
         if (recipeContainer) {
           const urlParams = new URLSearchParams(window.location.search);
           const recipeId = urlParams.get('id'); // Id here will be the recipe ID.
@@ -115,7 +103,7 @@ get(recipesRef)
                   />
                   <div>
                     <h3>${recipe.name}</h3>
-                    <button id='share-button'>Share</button>
+                    <button id="share-button">Share</button>
                     </br>
                     <p>Theme: ${recipe.theme}</p>
                     </br>
@@ -125,10 +113,25 @@ get(recipesRef)
                   </div>
                 </div>
               `;
-              // Populating the share contents for when the button is clicked to share.
-              shareData.title = recipe.name;
-              shareData.text = `Learn how to cook ${recipe.name}`;
-              shareData.url = `https://melissaastbury.github.io/WebTechnologiesCW01/src/html/recipe.html?id=${recipe.id}`
+            // Populating the share contents for when the button is clicked to share.
+            shareData.title = recipe.name;
+            shareData.text = `Learn how to cook ${recipe.name}`;
+            shareData.url = `https://melissaastbury.github.io/WebTechnologiesCW01/src/html/recipe.html?id=${recipe.id}`;
+
+            // Remove the share button if its not supported by the browser.
+            if (navigator) {
+              document.getElementById('share-button')!.style.display = 'none';
+            } else {
+              document
+                .getElementById('share-button')!
+                .addEventListener('click', async () => {
+                  try {
+                    await navigator.share(shareData);
+                  } catch (err) {
+                    console.warn(`Error: ${err}`);
+                  }
+                });
+            }
           }
         }
 
