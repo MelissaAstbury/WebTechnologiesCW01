@@ -11,7 +11,7 @@ export interface Irecipe {
   instructions: string;
   image: string;
   allergies: string[];
-  sharingPolicy: string[];
+  sharingPolicy: 'public' | 'private';
   votes: number;
 }
 
@@ -37,20 +37,84 @@ get(recipesRef)
       for (const recipe of Object.values(snapshot.val()) as Irecipe[]) {
         // This will render all recipes on the all recipes page.
         if (allRecipesElement) {
-          document.getElementById('all-recipes')!.innerHTML += `
-              <div class="recipe-item">
-                <img
-                  src="../../assets/images/${recipe.image}"
-                  alt="${recipe.name}"
-                  class="recipe-item-image"
-                />
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <p>Theme: ${recipe.theme}</p>
-                  <a href="./recipe.html?id=${recipe.id}">View</a>
-                </div>
+          const urlParams = new URLSearchParams(window.location.search);
+          // If the user has picked a theme, it will appear here from the path URL.
+          const themeSelected = urlParams.get('theme');
+          if (!themeSelected && recipe.sharingPolicy === 'public') {
+            document.getElementById('all-recipes')!.innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
               </div>
-            `;
+            </div>
+          `;
+          } else if (
+            // If you have not selected a theme, its a private recipe and its owned by yourself.
+            !themeSelected &&
+            recipe.sharingPolicy === 'private' &&
+            recipe.publisher === userEmail
+          ) {
+            document.getElementById('all-recipes')!.innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
+              </div>
+            </div>
+          `;
+          } else if (
+            // Selected theme and its a public recipe.
+            themeSelected === recipe.theme &&
+            recipe.sharingPolicy === 'public'
+          ) {
+            document.getElementById('all-recipes')!.innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
+              </div>
+            </div>
+          `;
+          } else if (
+            // Selected a theme and the recipe is private and its owned by yourself.
+            themeSelected === recipe.theme &&
+            recipe.sharingPolicy === 'private' &&
+            recipe.publisher === userEmail
+          ) {
+            document.getElementById('all-recipes')!.innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
+              </div>
+            </div>
+          `;
+          }
         }
 
         // Keeps a count of how many, we only want to render 9 items.
@@ -120,8 +184,6 @@ get(recipesRef)
 
             // Remove the share button if its not supported by the browser.
             if (navigator) {
-              document.getElementById('share-button')!.style.display = 'none';
-            } else {
               document
                 .getElementById('share-button')!
                 .addEventListener('click', async () => {
@@ -131,6 +193,8 @@ get(recipesRef)
                     console.warn(`Error: ${err}`);
                   }
                 });
+            } else {
+              document.getElementById('share-button')!.style.display = 'none';
             }
           }
         }
