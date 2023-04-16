@@ -17,7 +17,7 @@ function sendRecipeData(
   sharingPolicy: string[]
 ) {
   const id = uuidv4();
-  update(ref(db,'recipes/' + id), {
+  update(ref(db, 'recipes/' + id), {
     id,
     publisher,
     name,
@@ -37,16 +37,12 @@ export const createRecipe = (e: Event) => {
     // Prevent broswer default behaviour
     e.preventDefault();
     // Check the user authentication
-    if (
-      !onGetUser() ||
-      !onGetUser().currentUser ||
-      onGetUser().currentUser?.email === null
-    ) {
+    if (!onGetUser() || onGetUser().email === null) {
       console.warn('Sign in to create a recipe');
       return;
     }
     // Get values from form
-    const publisher = onGetUser().currentUser?.email;
+    const publisher = onGetUser().email;
     const theme = document.getElementById('theme') as HTMLInputElement;
     const name = document.getElementById('name') as HTMLInputElement;
     const ingredients = document.getElementById(
@@ -55,7 +51,9 @@ export const createRecipe = (e: Event) => {
     const instructions = document.getElementById(
       'instructions'
     ) as HTMLInputElement;
-    const image = document.querySelector("input[type='radio'][name='food-image']:checked") as HTMLInputElement;
+    const image = document.querySelector(
+      "input[type='radio'][name='food-image']:checked"
+    ) as HTMLInputElement;
     const dairyAllergy = document.getElementById(
       'dairy-allergy'
     ) as HTMLInputElement;

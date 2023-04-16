@@ -6,6 +6,10 @@
   font-family: 'Poppins', sans-serif;
 }
 
+a {
+  color: inherit;
+}
+
 header {
   background-color: rgb(166, 166, 166);
   height: 60px;
@@ -54,17 +58,22 @@ nav ul li button {
   color: #000;
 }
 
-/* button:hover {
-    background-color: brightness(150%) !important;
-} */
+#page-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 /* 
     Reusable classes
 */
-
 .wrapper {
   max-width: 1280px;
   margin: 40px auto;
+}
+
+.absolute { 
+  position: absolute;
 }
 
 .loader {

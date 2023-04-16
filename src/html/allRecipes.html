@@ -32,12 +32,11 @@
   <body>
     <header>
       <div>
-        <a class="title" href="../../index.html">Peliza Recipes</a>
+        <a href="../../index.html">Peliza Recipes</a>
         <nav class="navigation">
           <ul>
             <li><a href="./allRecipes.html">All Recipes</a></li>
-            <li><a href="./yourRecipes.html">Your Recipes</a></li>
-            <li><a href="./favourites.html">Favourites</a></li>
+            <li><a href="./yourRecipes.html" id="your-recipes-nav">Your Recipes</a></li>
             <li><button id="login">Login</button></li>
             <li><button id="logout">Logout</button></li>
           </ul>
@@ -67,8 +66,10 @@
           </label>
         </div>
         <article class="recipes-container" id="all-recipes">
-          <span class="loader" id="loading-spinner"></span>
         </article>
+        <div id="page-spinner" role="timer" aria-label="loading spinner">
+          <span class="loader" id="loading-spinner"></span>
+        </div>
       </section>
     </main>
   </body>
