@@ -15872,21 +15872,11 @@
   var homeRecipesElement = document.getElementById("home-recipes");
   var yourRecipesElement = document.getElementById("your-recipes");
   var recipeContainer = document.getElementById("recipe-container");
-  var shareBtn = document.getElementById("#share-button");
   var shareData = {
     title: "",
     text: "",
     url: ""
   };
-  if (recipeContainer && shareBtn) {
-    shareBtn.addEventListener("click", () => __async(void 0, null, function* () {
-      try {
-        yield navigator.share(shareData);
-      } catch (err) {
-        console.warn(`Error: ${err}`);
-      }
-    }));
-  }
   get(recipesRef).then((snapshot) => {
     if (snapshot.val()) {
       let index = 0;
@@ -15918,7 +15908,7 @@
                 <div>
                   <h3>${recipe.name}</h3>
                   <p>Theme: ${recipe.theme}</p>
-                  <a href="./recipe.html?id=${recipe.id}">View</a>
+                  <a href="./src/html/recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
@@ -15951,7 +15941,7 @@
                   />
                   <div>
                     <h3>${recipe.name}</h3>
-                    <button id='share-button'>Share</button>
+                    <button id="share-button">Share</button>
                     </br>
                     <p>Theme: ${recipe.theme}</p>
                     </br>
@@ -15964,6 +15954,17 @@
             shareData.title = recipe.name;
             shareData.text = `Learn how to cook ${recipe.name}`;
             shareData.url = `https://melissaastbury.github.io/WebTechnologiesCW01/src/html/recipe.html?id=${recipe.id}`;
+            if (navigator) {
+              document.getElementById("share-button").style.display = "none";
+            } else {
+              document.getElementById("share-button").addEventListener("click", () => __async(void 0, null, function* () {
+                try {
+                  yield navigator.share(shareData);
+                } catch (err) {
+                  console.warn(`Error: ${err}`);
+                }
+              }));
+            }
           }
         }
         index++;
