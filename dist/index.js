@@ -15882,20 +15882,78 @@
       let index = 0;
       for (const recipe of Object.values(snapshot.val())) {
         if (allRecipesElement) {
-          document.getElementById("all-recipes").innerHTML += `
-              <div class="recipe-item">
-                <img
-                  src="../../assets/images/${recipe.image}"
-                  alt="${recipe.name}"
-                  class="recipe-item-image"
-                />
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <p>Theme: ${recipe.theme}</p>
-                  <a href="./recipe.html?id=${recipe.id}">View</a>
-                </div>
+          const urlParams = new URLSearchParams(window.location.search);
+          const themeSelected = urlParams.get("theme");
+          if (!themeSelected && recipe.sharingPolicy === "public") {
+            document.getElementById("all-recipes").innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
               </div>
-            `;
+            </div>
+          `;
+          } else if (
+            // If you have not selected a theme, its a private recipe and its owned by yourself.
+            !themeSelected && recipe.sharingPolicy === "private" && recipe.publisher === userEmail
+          ) {
+            document.getElementById("all-recipes").innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
+              </div>
+            </div>
+          `;
+          } else if (
+            // Selected theme and its a public recipe.
+            themeSelected === recipe.theme && recipe.sharingPolicy === "public"
+          ) {
+            document.getElementById("all-recipes").innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
+              </div>
+            </div>
+          `;
+          } else if (
+            // Selected a theme and the recipe is private and its owned by yourself.
+            themeSelected === recipe.theme && recipe.sharingPolicy === "private" && recipe.publisher === userEmail
+          ) {
+            document.getElementById("all-recipes").innerHTML += `
+            <div class="recipe-item">
+              <img
+                src="../../assets/images/${recipe.image}"
+                alt="${recipe.name}"
+                class="recipe-item-image"
+              />
+              <div>
+                <h3>${recipe.name}</h3>
+                <p>Theme: ${recipe.theme}</p>
+                <a href="./recipe.html?id=${recipe.id}">View</a>
+              </div>
+            </div>
+          `;
+          }
         }
         if (homeRecipesElement && index < 9) {
           document.getElementById("home-recipes").innerHTML += `
@@ -15955,8 +16013,6 @@
             shareData.text = `Learn how to cook ${recipe.name}`;
             shareData.url = `https://melissaastbury.github.io/WebTechnologiesCW01/src/html/recipe.html?id=${recipe.id}`;
             if (navigator) {
-              document.getElementById("share-button").style.display = "none";
-            } else {
               document.getElementById("share-button").addEventListener("click", () => __async(void 0, null, function* () {
                 try {
                   yield navigator.share(shareData);
@@ -15964,6 +16020,8 @@
                   console.warn(`Error: ${err}`);
                 }
               }));
+            } else {
+              document.getElementById("share-button").style.display = "none";
             }
           }
         }
