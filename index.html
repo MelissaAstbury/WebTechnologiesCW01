@@ -34,12 +34,11 @@
   <body>
     <header>
       <div>
-        <a class="title" href="./index.html">Peliza Recipes</a>
+        <a href="./index.html">Peliza Recipes</a>
         <nav class="navigation">
           <ul>
             <li><a href="./src/html/allRecipes.html">All Recipes</a></li>
-            <li><a href="./src/html/yourRecipes.html">Your Recipes</a></li>
-            <li><a href="./src/html/favourites.html">Favourites</a></li>
+            <li><a href="./src/html/yourRecipes.html" id="your-recipes-nav">Your Recipes</a></li>
             <li><button id="login" type="button">Login</button></li>
             <li><button id="logout" type="button">Logout</button></li>
           </ul>
@@ -50,8 +49,10 @@
       <section class="wrapper">
         <h1>Your Finest Foods</h1>
         <article class="recipes-container" id="home-recipes">
-          <span class="loader" id="loading-spinner"></span>
         </article>
+        <div id="page-spinner" role="timer" aria-label="loading spinner">
+          <span class="loader" id="loading-spinner"></span>
+        </div>
       </section>
     </main>
   </body>

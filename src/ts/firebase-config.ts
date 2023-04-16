@@ -1,6 +1,9 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase } from "firebase/database";
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
+import {
+  getAuth,
+  GoogleAuthProvider,
+} from 'firebase/auth';
 import {
   API_KEY,
   DATABASE_URL,
@@ -9,7 +12,6 @@ import {
   MEASUREMENT_ID,
 } from '../../config';
 
-// TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
 const firebaseConfig = {
   apiKey: API_KEY,

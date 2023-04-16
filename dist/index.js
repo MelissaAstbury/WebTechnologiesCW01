@@ -15695,32 +15695,44 @@
     try {
       const result = yield signInWithPopup(auth, provider);
       const user = result.user;
-      console.log("Signed in with ", user);
+      localStorage.setItem("user", JSON.stringify(user));
+      console.log("Signed in with ", user.displayName);
       loginBtn.style.display = "none";
       logoutBtn.style.display = "block";
+      yourRecipesNavBtn.style.display = "block";
     } catch (error2) {
       console.error(error2);
     }
   });
   var onSignOut = () => {
     signOut(auth);
-    logoutBtn.style.display = "none";
+    localStorage.removeItem("user");
     loginBtn.style.display = "block";
+    logoutBtn.style.display = "none";
+    yourRecipesNavBtn.style.display = "none";
   };
   var onGetUser = () => {
-    return auth;
+    const user = localStorage.getItem("user");
+    if (user) {
+      return JSON.parse(user);
+    } else {
+      return false;
+    }
   };
   document.addEventListener("DOMContentLoaded", function() {
-    if (onGetUser().currentUser) {
+    if (onGetUser()) {
       loginBtn.style.display = "none";
       logoutBtn.style.display = "block";
+      yourRecipesNavBtn.style.display = "block";
     } else {
+      yourRecipesNavBtn.style.display = "none";
       logoutBtn.style.display = "none";
       loginBtn.style.display = "block";
     }
   });
   var loginBtn = document.getElementById("login");
   var logoutBtn = document.getElementById("logout");
+  var yourRecipesNavBtn = document.getElementById("your-recipes-nav");
 
   // node_modules/uuid/dist/esm-browser/rng.js
   var getRandomValues;
@@ -15788,14 +15800,13 @@
     });
   }
   var createRecipe = (e) => {
-    var _a2, _b;
     try {
       e.preventDefault();
-      if (!onGetUser() || !onGetUser().currentUser || ((_a2 = onGetUser().currentUser) == null ? void 0 : _a2.email) === null) {
+      if (!onGetUser() || onGetUser().email === null) {
         console.warn("Sign in to create a recipe");
         return;
       }
-      const publisher = (_b = onGetUser().currentUser) == null ? void 0 : _b.email;
+      const publisher = onGetUser().email;
       const theme = document.getElementById("theme");
       const name5 = document.getElementById("name");
       const ingredients = document.getElementById(
@@ -15804,7 +15815,9 @@
       const instructions = document.getElementById(
         "instructions"
       );
-      const image = document.querySelector("input[type='radio'][name='food-image']:checked");
+      const image = document.querySelector(
+        "input[type='radio'][name='food-image']:checked"
+      );
       const dairyAllergy = document.getElementById(
         "dairy-allergy"
       );
@@ -15854,19 +15867,17 @@
   // src/ts/recipes.ts
   var db2 = getDatabase();
   var recipesRef = ref(db2, "recipes");
+  var userEmail = onGetUser().email;
+  var allRecipesElement = document.getElementById("all-recipes");
+  var homeRecipesElement = document.getElementById("home-recipes");
+  var yourRecipesElement = document.getElementById("your-recipes");
   get(recipesRef).then((snapshot) => {
     if (snapshot.val()) {
       let index = 0;
-      const allRecipesElement = document.getElementById("all-recipes");
-      const homeRecipesElement = document.getElementById("home-recipes");
       for (const values of Object.values(snapshot.val())) {
-        console.log(values);
         if (allRecipesElement) {
           document.getElementById("all-recipes").innerHTML += `
               <div class="recipe-item">
-                <span style="color: rgb(212, 42, 12)">
-                  <i class="fa-solid fa-heart fa-lg"></i>
-                </span>
                 <img
                   src="../../assets/images/${values.image}"
                   alt="Pizza"
@@ -15874,7 +15885,7 @@
                 />
                 <div>
                   <h3>${values.name}</h3>
-                  <p>Time: 30mins</p>
+                  <p>Theme: ${values.theme}</p>
                 </div>
               </div>
             `;
@@ -15882,9 +15893,6 @@
         if (homeRecipesElement && index < 9) {
           document.getElementById("home-recipes").innerHTML += `
               <div class="recipe-item">
-                <span style="color: rgb(212, 42, 12)">
-                  <i class="fa-solid fa-heart fa-lg"></i>
-                </span>
                 <img
                   src="./assets/images/${values.image}"
                   alt="Pizza"
@@ -15892,21 +15900,46 @@
                 />
                 <div>
                   <h3>${values.name}</h3>
-                  <p>Time: 30mins</p>
+                  <p>Theme: ${values.theme}</p>
+                </div>
+              </div>
+            `;
+        }
+        if (yourRecipesElement && values.publisher === userEmail) {
+          document.getElementById("your-recipes").innerHTML += `
+              <div class="recipe-item">
+                <img
+                  src="../../assets/images/${values.image}"
+                  alt="Pizza"
+                  class="recipe-item-image"
+                />
+                <div>
+                  <h3>${values.name}</h3>
+                  <p>Theme: ${values.theme}</p>
                 </div>
               </div>
             `;
         }
         index++;
       }
-      document.getElementById("loading-spinner").style.display = "none";
+      document.getElementById("page-spinner").style.display = "none";
     }
   }).catch((err) => {
-    document.getElementById("loading-spinner").style.display = "none";
-    document.getElementById("all-recipes").innerHTML += `
-      <h2>Sorry there has been an error fetching all recipes.</h2>
-    `;
-    console.error(err);
+    document.getElementById("page-spinner").style.display = "none";
+    if (allRecipesElement) {
+      document.getElementById("all-recipes").innerHTML += `
+        <h2>Sorry there has been an error fetching all recipes.</h2>
+      `;
+    } else if (homeRecipesElement) {
+      document.getElementById("home-recipes").innerHTML += `
+        <h2>Sorry there has been an error fetching recipes.</h2>
+      `;
+    } else if (yourRecipesElement) {
+      document.getElementById("your-recipes").innerHTML += `
+        <h2>Sorry there has been an error fetching your recipes.</h2>
+      `;
+    }
+    console.warn(err);
   });
 
   // src/ts/index.ts
