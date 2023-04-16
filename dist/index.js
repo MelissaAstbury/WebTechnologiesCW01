@@ -15871,21 +15871,38 @@
   var allRecipesElement = document.getElementById("all-recipes");
   var homeRecipesElement = document.getElementById("home-recipes");
   var yourRecipesElement = document.getElementById("your-recipes");
+  var recipeContainer = document.getElementById("recipe-container");
+  var shareBtn = document.getElementById("#share-button");
+  var shareData = {
+    title: "",
+    text: "",
+    url: ""
+  };
+  if (recipeContainer && shareBtn) {
+    shareBtn.addEventListener("click", () => __async(void 0, null, function* () {
+      try {
+        yield navigator.share(shareData);
+      } catch (err) {
+        console.warn(`Error: ${err}`);
+      }
+    }));
+  }
   get(recipesRef).then((snapshot) => {
     if (snapshot.val()) {
       let index = 0;
-      for (const values of Object.values(snapshot.val())) {
+      for (const recipe of Object.values(snapshot.val())) {
         if (allRecipesElement) {
           document.getElementById("all-recipes").innerHTML += `
               <div class="recipe-item">
                 <img
-                  src="../../assets/images/${values.image}"
-                  alt="Pizza"
+                  src="../../assets/images/${recipe.image}"
+                  alt="${recipe.name}"
                   class="recipe-item-image"
                 />
                 <div>
-                  <h3>${values.name}</h3>
-                  <p>Theme: ${values.theme}</p>
+                  <h3>${recipe.name}</h3>
+                  <p>Theme: ${recipe.theme}</p>
+                  <a href="./recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
@@ -15894,37 +15911,67 @@
           document.getElementById("home-recipes").innerHTML += `
               <div class="recipe-item">
                 <img
-                  src="./assets/images/${values.image}"
-                  alt="Pizza"
+                  src="./assets/images/${recipe.image}"
+                  alt="${recipe.name}"
                   class="recipe-item-image"
                 />
                 <div>
-                  <h3>${values.name}</h3>
-                  <p>Theme: ${values.theme}</p>
+                  <h3>${recipe.name}</h3>
+                  <p>Theme: ${recipe.theme}</p>
+                  <a href="./recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
         }
-        if (yourRecipesElement && values.publisher === userEmail) {
+        if (yourRecipesElement && recipe.publisher === userEmail) {
           document.getElementById("your-recipes").innerHTML += `
               <div class="recipe-item">
                 <img
-                  src="../../assets/images/${values.image}"
-                  alt="Pizza"
+                  src="../../assets/images/${recipe.image}"
+                  alt="${recipe.name}"
                   class="recipe-item-image"
                 />
                 <div>
-                  <h3>${values.name}</h3>
-                  <p>Theme: ${values.theme}</p>
+                  <h3>${recipe.name}</h3>
+                  <p>Theme: ${recipe.theme}</p>
+                  <a href="./recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
+        }
+        if (recipeContainer) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const recipeId = urlParams.get("id");
+          if (recipe.id === recipeId) {
+            document.getElementById("recipe").innerHTML += `
+                <div class="recipe">
+                  <img
+                    src="../../assets/images/${recipe.image}"
+                    alt="${recipe.name}"
+                  />
+                  <div>
+                    <h3>${recipe.name}</h3>
+                    <button id='share-button'>Share</button>
+                    </br>
+                    <p>Theme: ${recipe.theme}</p>
+                    </br>
+                    <p>${recipe.ingredients}</p>
+                    </br>
+                    <p>${recipe.instructions}</p>
+                  </div>
+                </div>
+              `;
+            shareData.title = recipe.name;
+            shareData.text = `Learn how to cook ${recipe.name}`;
+            shareData.url = `https://melissaastbury.github.io/WebTechnologiesCW01/src/html/recipe.html?id=${recipe.id}`;
+          }
         }
         index++;
       }
       document.getElementById("page-spinner").style.display = "none";
     }
   }).catch((err) => {
+    console.warn(err);
     document.getElementById("page-spinner").style.display = "none";
     if (allRecipesElement) {
       document.getElementById("all-recipes").innerHTML += `
@@ -15939,7 +15986,6 @@
         <h2>Sorry there has been an error fetching your recipes.</h2>
       `;
     }
-    console.warn(err);
   });
 
   // src/ts/index.ts

@@ -22,65 +22,117 @@ const userEmail = onGetUser().email;
 const allRecipesElement = document.getElementById('all-recipes');
 const homeRecipesElement = document.getElementById('home-recipes');
 const yourRecipesElement = document.getElementById('your-recipes');
+const recipeContainer = document.getElementById('recipe-container');
+const shareBtn = document.getElementById("#share-button");
+let shareData = {
+  title: '',
+  text: '',
+  url: '',
+};
 export const allRecipes: Irecipe[] = [];
+
+if (recipeContainer && shareBtn) {
+  // Share must be triggered by "user activation"
+  shareBtn.addEventListener("click", async () => {
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      console.warn(`Error: ${err}`);
+    }
+  });
+}
 
 get(recipesRef)
   .then((snapshot) => {
     if (snapshot.val()) {
       let index = 0;
-      for (const values of Object.values(snapshot.val()) as Irecipe[]) {
-        // allRecipes.push(values as Irecipe);
+      for (const recipe of Object.values(snapshot.val()) as Irecipe[]) {
+        // This will render all recipes on the all recipes page. 
         if (allRecipesElement) {
           document.getElementById('all-recipes')!.innerHTML += `
               <div class="recipe-item">
                 <img
-                  src="../../assets/images/${values.image}"
-                  alt="Pizza"
+                  src="../../assets/images/${recipe.image}"
+                  alt="${recipe.name}"
                   class="recipe-item-image"
                 />
                 <div>
-                  <h3>${values.name}</h3>
-                  <p>Theme: ${values.theme}</p>
+                  <h3>${recipe.name}</h3>
+                  <p>Theme: ${recipe.theme}</p>
+                  <a href="./recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
         }
 
-        // Keeps a count of how many, we only want to display 9 items.
+        // Keeps a count of how many, we only want to render 9 items.
         if (homeRecipesElement && index < 9) {
           document.getElementById('home-recipes')!.innerHTML += `
               <div class="recipe-item">
                 <img
-                  src="./assets/images/${values.image}"
-                  alt="Pizza"
+                  src="./assets/images/${recipe.image}"
+                  alt="${recipe.name}"
                   class="recipe-item-image"
                 />
                 <div>
-                  <h3>${values.name}</h3>
-                  <p>Theme: ${values.theme}</p>
+                  <h3>${recipe.name}</h3>
+                  <p>Theme: ${recipe.theme}</p>
+                  <a href="./recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
         }
 
-        // This will only draw the receipes on the page which are attached to the current user.
-        if (yourRecipesElement && values.publisher === userEmail) {
+        // This will only render the receipes on the page which are attached to the current user.
+        if (yourRecipesElement && recipe.publisher === userEmail) {
           document.getElementById('your-recipes')!.innerHTML += `
               <div class="recipe-item">
                 <img
-                  src="../../assets/images/${values.image}"
-                  alt="Pizza"
+                  src="../../assets/images/${recipe.image}"
+                  alt="${recipe.name}"
                   class="recipe-item-image"
                 />
                 <div>
-                  <h3>${values.name}</h3>
-                  <p>Theme: ${values.theme}</p>
+                  <h3>${recipe.name}</h3>
+                  <p>Theme: ${recipe.theme}</p>
+                  <a href="./recipe.html?id=${recipe.id}">View</a>
                 </div>
               </div>
             `;
         }
 
-        // Adding itteror count at the end -
+        // This will render the singular reciep which is pushed to the path URL.
+        if (recipeContainer) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const recipeId = urlParams.get('id'); // Id here will be the recipe ID.
+          if (recipe.id === recipeId) {
+            // only renders the selected recipe.
+            document.getElementById('recipe')!.innerHTML += `
+                <div class="recipe">
+                  <img
+                    src="../../assets/images/${recipe.image}"
+                    alt="${recipe.name}"
+                  />
+                  <div>
+                    <h3>${recipe.name}</h3>
+                    <button id='share-button'>Share</button>
+                    </br>
+                    <p>Theme: ${recipe.theme}</p>
+                    </br>
+                    <p>${recipe.ingredients}</p>
+                    </br>
+                    <p>${recipe.instructions}</p>
+                  </div>
+                </div>
+              `;
+              // Populating the share contents for when the button is clicked to share.
+              shareData.title = recipe.name;
+              shareData.text = `Learn how to cook ${recipe.name}`;
+              shareData.url = `https://melissaastbury.github.io/WebTechnologiesCW01/src/html/recipe.html?id=${recipe.id}`
+          }
+        }
+
+        // Adding itteror count at the end.
         index++;
       }
       // Hide loader upon successful load and also drawn onto the document.
@@ -88,6 +140,7 @@ get(recipesRef)
     }
   })
   .catch((err) => {
+    console.warn(err);
     // Hide loader upon error fetching recipes.
     document.getElementById('page-spinner')!.style.display = 'none';
     if (allRecipesElement) {
@@ -103,5 +156,4 @@ get(recipesRef)
         <h2>Sorry there has been an error fetching your recipes.</h2>
       `;
     }
-    console.warn(err);
   });
