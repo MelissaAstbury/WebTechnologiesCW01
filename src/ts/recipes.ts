@@ -48,10 +48,12 @@ get(recipesRef)
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>
+                </div>  
+                </a>
               </div>
             </div>
           `;
@@ -68,11 +70,12 @@ get(recipesRef)
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
-              </div>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>  
+                </div>
+                </a>
             </div>
           `;
           } else if (
@@ -80,6 +83,8 @@ get(recipesRef)
             themeSelected === recipe.theme &&
             recipe.sharingPolicy === 'public'
           ) {
+            document.getElementById(themeSelected)!.style.textDecoration = 'underline';
+            document.getElementById(themeSelected)!.style.backgroundColor = '#0333';
             document.getElementById('all-recipes')!.innerHTML += `
             <div class="recipe-item">
               <img
@@ -87,11 +92,12 @@ get(recipesRef)
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
-              </div>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>
+                </div>  
+              </a>
             </div>
           `;
           } else if (
@@ -100,6 +106,8 @@ get(recipesRef)
             recipe.sharingPolicy === 'private' &&
             recipe.publisher === userEmail
           ) {
+            document.getElementById(themeSelected)!.style.textDecoration = 'underline';
+            document.getElementById(themeSelected)!.style.backgroundColor = '#0333';
             document.getElementById('all-recipes')!.innerHTML += `
             <div class="recipe-item">
               <img
@@ -107,11 +115,12 @@ get(recipesRef)
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
-              </div>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>
+                </div>
+              </a>
             </div>
           `;
           }
@@ -126,11 +135,12 @@ get(recipesRef)
                   alt="${recipe.name}"
                   class="recipe-item-image"
                 />
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <p>Theme: ${recipe.theme}</p>
-                  <a href="./src/html/recipe.html?id=${recipe.id}">View</a>
-                </div>
+                <a href="./src/html/recipe.html?id=${recipe.id}">
+                  <div>
+                    <p class="bold-text">${recipe.name}</p>
+                    <p> ${recipe.theme}</p>  
+                  </div>
+                  </a>
               </div>
             `;
         }
@@ -144,11 +154,12 @@ get(recipesRef)
                   alt="${recipe.name}"
                   class="recipe-item-image"
                 />
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <p>Theme: ${recipe.theme}</p>
-                  <a href="./recipe.html?id=${recipe.id}">View</a>
-                </div>
+                <a href="./recipe.html?id=${recipe.id}">
+                  <div>
+                    <p class="bold-text">${recipe.name}</p>
+                    <p> ${recipe.theme}</p>
+                  </div>
+                </a>
               </div>
             `;
         }
@@ -166,13 +177,15 @@ get(recipesRef)
                     alt="${recipe.name}"
                   />
                   <div>
-                    <h3>${recipe.name}</h3>
+                  <div class="recipe-header">
+                    <p class="bold-text">${recipe.name}</p>
                     <button id="share-button">Share</button>
+                  </div>
                     </br>
-                    <p>Theme: ${recipe.theme}</p>
-                    </br>
+                    <span class="bold-text">Ingrediants:</span>
                     <p>${recipe.ingredients}</p>
                     </br>
+                    <span class="bold-text">Instructions:</span> 
                     <p>${recipe.instructions}</p>
                   </div>
                 </div>
