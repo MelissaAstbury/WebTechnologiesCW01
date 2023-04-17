@@ -88,19 +88,19 @@ select {
 }
 
 #asian {
-  background-image: url(../../assets/images/asian.jpeg);
+  background-image: url(../../assets/images/asian.webp);
 }
 
 #beef {
-  background-image: url(../../assets/images/beef.jpeg);
+  background-image: url(../../assets/images/beef.webp);
 }
 
 #biscuits {
-  background-image: url(../../assets/images/biscuits.jpg);
+  background-image: url(../../assets/images/biscuits.webp);
 }
 
 #cakes {
-  background-image: url(../../assets/images/cakes.jpeg);
+  background-image: url(../../assets/images/cakes.webp);
 }
 
 #chicken {
@@ -108,15 +108,15 @@ select {
 }
 
 #indian {
-  background-image: url(../../assets/images/curry.jpeg);
+  background-image: url(../../assets/images/curry.webp);
 }
 
 #fish {
-  background-image: url(../../assets/images/fish.jpeg);
+  background-image: url(../../assets/images/fish.webp);
 }
 
 #italian {
-  background-image: url(../../assets/images/italian.jpeg);
+  background-image: url(../../assets/images/italian.webp);
 }
 
 #vegetarian {
