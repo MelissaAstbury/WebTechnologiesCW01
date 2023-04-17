@@ -13,16 +13,16 @@
     <meta property="og:description" content="Browse all receipes" />
     <meta
       property="og:image"
-      content="https://melissaastbury.github.io/WebTechnologiesCW01/assets/images/asian.jpeg"
+      content="https://melissaastbury.github.io/WebTechnologiesCW01/assets/images/asian.webp"
     />
 
     <link rel="stylesheet" href="../css/index.css" />
     <link rel="stylesheet" href="../css/recipes.css" />
     <link rel="stylesheet" href="../css/allRecipes.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap"
       rel="stylesheet"
     />
     <script
@@ -54,17 +54,21 @@
       <section class="wrapper">
         <h1>Explore great food</h1>
         <div class="nested-navigation">
-          <a href="./allRecipes.html?theme=asian">Asian</a>
-          <a href="./allRecipes.html?theme=beef">Beef</a>
-          <a href="./allRecipes.html?theme=chicken">Chicken</a>
-          <a href="./allRecipes.html?theme=indian">Indian</a>
-          <a href="./allRecipes.html?theme=fish">Fish</a>
-          <a href="./allRecipes.html?theme=italian">Italian</a>
-          <a href="./allRecipes.html?theme=vegetarian">Vegetarian</a>
-          <a href="./allRecipes.html?theme=desserts">Desserts</a>
-          <a href="./allRecipes.html?theme=nutfree">Nut free</a>
-          <a href="./allRecipes.html?theme=dairyfree">Dairy free</a>
-          <a href="./allRecipes.html">Reset filter</a>
+          <a id="asian" href="./allRecipes.html?theme=asian">Asian</a>
+          <a id="beef" href="./allRecipes.html?theme=beef">Beef</a>
+          <a id="chicken" href="./allRecipes.html?theme=chicken">Chicken</a>
+          <a id="indian" href="./allRecipes.html?theme=indian">Indian</a>
+          <a id="fish" href="./allRecipes.html?theme=fish">Fish</a>
+          <a id="italian" href="./allRecipes.html?theme=italian">Italian</a>
+          <a id="vegetarian" href="./allRecipes.html?theme=vegetarian"
+            >Vegetarian</a
+          >
+          <a id="desserts" href="./allRecipes.html?theme=desserts">Desserts</a>
+          <a id="nutfree" href="./allRecipes.html?theme=nutfree">Nut free</a>
+          <a id="dairyfree" href="./allRecipes.html?theme=dairyfree"
+            >Dairy free</a
+          >
+          <a href="./allRecipes.html">Reset</a>
         </div>
         <article class="recipes-container" id="all-recipes"></article>
         <div id="page-spinner" role="timer" aria-label="loading spinner">

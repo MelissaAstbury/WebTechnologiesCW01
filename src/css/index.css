@@ -11,7 +11,7 @@ a {
 }
 
 header {
-  background-color: rgb(166, 166, 166);
+  background-color: rgb(211, 207, 207);
   height: 60px;
 }
 
@@ -74,6 +74,10 @@ nav ul li button {
 
 .absolute { 
   position: absolute;
+}
+
+.bold-text {
+  font-weight: bold;
 }
 
 .loader {

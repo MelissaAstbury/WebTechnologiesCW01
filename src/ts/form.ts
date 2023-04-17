@@ -13,8 +13,7 @@ function sendRecipeData(
   ingredients: string,
   instructions: string,
   image: string,
-  allergies: string[],
-  sharingPolicy: string[]
+  sharingPolicy: string
 ) {
   const id = uuidv4();
   update(ref(db, 'recipes/' + id), {
@@ -25,7 +24,6 @@ function sendRecipeData(
     ingredients,
     instructions,
     image,
-    allergies,
     sharingPolicy,
     votes: 0,
   });
@@ -54,12 +52,6 @@ export const createRecipe = (e: Event) => {
     const image = document.querySelector(
       "input[type='radio'][name='food-image']:checked"
     ) as HTMLInputElement;
-    const dairyAllergy = document.getElementById(
-      'dairy-allergy'
-    ) as HTMLInputElement;
-    const nutAllergy = document.getElementById(
-      'nut-allergy'
-    ) as HTMLInputElement;
     const publicSharing = document.getElementById(
       'public-sharing'
     ) as HTMLInputElement;
@@ -68,19 +60,12 @@ export const createRecipe = (e: Event) => {
     ) as HTMLInputElement;
 
     // push information into array
-    let allergies = [];
-    let sharingPolicy = [];
-    if (dairyAllergy.checked) {
-      allergies.push(dairyAllergy.value);
-    }
-    if (nutAllergy.checked) {
-      allergies.push(nutAllergy.value);
-    }
+    let sharingPolicy = '';
     if (publicSharing.checked) {
-      sharingPolicy.push(publicSharing.value);
+      sharingPolicy = 'public';
     }
     if (privateSharing.checked) {
-      sharingPolicy.push(privateSharing.value);
+      sharingPolicy = 'private';
     }
 
     // Send values to firebase database
@@ -91,7 +76,6 @@ export const createRecipe = (e: Event) => {
       ingredients.value,
       instructions.value,
       image.value,
-      allergies,
       sharingPolicy
     );
   } catch (error) {

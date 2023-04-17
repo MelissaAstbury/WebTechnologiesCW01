@@ -1,35 +1,124 @@
 .form-container {
-    display: flex;
-    flex-direction: column;
-    width: 800px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: start;
 }
 
 .label-name {
-    display: flex;
-    flex-direction: row;
-    padding: 30px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  width: 800px;
+}
+
+.sharing-policy {
+  margin: 12px 0;
+  display: flex;
+}
+
+.sharing-policy input {
+  margin-left: 12px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input {
+  padding: 8px;
+  max-width: 400px;
+}
+
+textarea {
+  padding: 8px;
+  min-height: 140px;
+  max-width: 400px;
+}
+
+select {
+  padding: 8px;
+  width: 150px;
+}
+
+[type='radio'] {
+  display: flex;
+  flex-direction: column;
 }
 
 .image {
-    width: 200px;
-    height: 200px;
+  width: 200px;
+  height: 200px;
 }
 
 .save-btn {
-    background-color: rgb(156, 149, 150);
+  background-color: rgb(156, 149, 150);
 }
 
 .image-selection {
-    display: grid;
-    grid-column: 1 / 5;
-    /* flex-direction: column; */
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  max-width: 600px;
+  flex-wrap: wrap;
 }
 
-/* .text-box {
-    height: 300px;
+.image-selection input {
+  height: 150px;
+  width: 150px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
 }
 
-.recipe-images {
-    width: 200px;
-    height: 200px;
-}  */
+.image-selection input:active {
+  opacity: 0.9;
+}
+
+.image-selection input:checked {
+  border: 5px solid rgb(1, 175, 27);
+  -webkit-filter: none;
+  -moz-filter: none;
+  filter: none;
+}
+
+#asian {
+  background-image: url(../../assets/images/asian.webp);
+}
+
+#beef {
+  background-image: url(../../assets/images/beef.webp);
+}
+
+#biscuits {
+  background-image: url(../../assets/images/biscuits.webp);
+}
+
+#cakes {
+  background-image: url(../../assets/images/cakes.webp);
+}
+
+#chicken {
+  background-image: url(../../assets/images/chicken.webp);
+}
+
+#indian {
+  background-image: url(../../assets/images/curry.webp);
+}
+
+#fish {
+  background-image: url(../../assets/images/fish.webp);
+}
+
+#italian {
+  background-image: url(../../assets/images/italian.webp);
+}
+
+#vegetarian {
+  background-image: url(../../assets/images/vegetarian.webp);
+}
