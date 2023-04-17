@@ -15784,7 +15784,7 @@
 
   // src/ts/form.ts
   var db = getDatabase();
-  function sendRecipeData(publisher, name5, theme, ingredients, instructions, image, allergies, sharingPolicy) {
+  function sendRecipeData(publisher, name5, theme, ingredients, instructions, image, sharingPolicy) {
     const id = v4_default();
     update(ref(db, "recipes/" + id), {
       id,
@@ -15794,7 +15794,6 @@
       ingredients,
       instructions,
       image,
-      allergies,
       sharingPolicy,
       votes: 0
     });
@@ -15818,31 +15817,18 @@
       const image = document.querySelector(
         "input[type='radio'][name='food-image']:checked"
       );
-      const dairyAllergy = document.getElementById(
-        "dairy-allergy"
-      );
-      const nutAllergy = document.getElementById(
-        "nut-allergy"
-      );
       const publicSharing = document.getElementById(
         "public-sharing"
       );
       const privateSharing = document.getElementById(
         "private-sharing"
       );
-      let allergies = [];
-      let sharingPolicy = [];
-      if (dairyAllergy.checked) {
-        allergies.push(dairyAllergy.value);
-      }
-      if (nutAllergy.checked) {
-        allergies.push(nutAllergy.value);
-      }
+      let sharingPolicy = "";
       if (publicSharing.checked) {
-        sharingPolicy.push(publicSharing.value);
+        sharingPolicy = "public";
       }
       if (privateSharing.checked) {
-        sharingPolicy.push(privateSharing.value);
+        sharingPolicy = "private";
       }
       sendRecipeData(
         publisher,
@@ -15851,7 +15837,6 @@
         ingredients.value,
         instructions.value,
         image.value,
-        allergies,
         sharingPolicy
       );
     } catch (error2) {
@@ -15892,10 +15877,12 @@
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>
+                </div>  
+                </a>
               </div>
             </div>
           `;
@@ -15910,17 +15897,20 @@
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
-              </div>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>  
+                </div>
+                </a>
             </div>
           `;
           } else if (
             // Selected theme and its a public recipe.
             themeSelected === recipe.theme && recipe.sharingPolicy === "public"
           ) {
+            document.getElementById(themeSelected).style.textDecoration = "underline";
+            document.getElementById(themeSelected).style.backgroundColor = "#0333";
             document.getElementById("all-recipes").innerHTML += `
             <div class="recipe-item">
               <img
@@ -15928,17 +15918,20 @@
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
-              </div>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>
+                </div>  
+              </a>
             </div>
           `;
           } else if (
             // Selected a theme and the recipe is private and its owned by yourself.
             themeSelected === recipe.theme && recipe.sharingPolicy === "private" && recipe.publisher === userEmail
           ) {
+            document.getElementById(themeSelected).style.textDecoration = "underline";
+            document.getElementById(themeSelected).style.backgroundColor = "#0333";
             document.getElementById("all-recipes").innerHTML += `
             <div class="recipe-item">
               <img
@@ -15946,11 +15939,12 @@
                 alt="${recipe.name}"
                 class="recipe-item-image"
               />
-              <div>
-                <h3>${recipe.name}</h3>
-                <p>Theme: ${recipe.theme}</p>
-                <a href="./recipe.html?id=${recipe.id}">View</a>
-              </div>
+              <a href="./recipe.html?id=${recipe.id}">
+                <div>
+                  <p class="bold-text">${recipe.name}</p>
+                  <p> ${recipe.theme}</p>
+                </div>
+              </a>
             </div>
           `;
           }
@@ -15963,11 +15957,12 @@
                   alt="${recipe.name}"
                   class="recipe-item-image"
                 />
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <p>Theme: ${recipe.theme}</p>
-                  <a href="./src/html/recipe.html?id=${recipe.id}">View</a>
-                </div>
+                <a href="./src/html/recipe.html?id=${recipe.id}">
+                  <div>
+                    <p class="bold-text">${recipe.name}</p>
+                    <p> ${recipe.theme}</p>  
+                  </div>
+                  </a>
               </div>
             `;
         }
@@ -15979,11 +15974,12 @@
                   alt="${recipe.name}"
                   class="recipe-item-image"
                 />
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <p>Theme: ${recipe.theme}</p>
-                  <a href="./recipe.html?id=${recipe.id}">View</a>
-                </div>
+                <a href="./recipe.html?id=${recipe.id}">
+                  <div>
+                    <p class="bold-text">${recipe.name}</p>
+                    <p> ${recipe.theme}</p>
+                  </div>
+                </a>
               </div>
             `;
         }
@@ -15998,13 +15994,15 @@
                     alt="${recipe.name}"
                   />
                   <div>
-                    <h3>${recipe.name}</h3>
+                  <div class="recipe-header">
+                    <p class="bold-text">${recipe.name}</p>
                     <button id="share-button">Share</button>
+                  </div>
                     </br>
-                    <p>Theme: ${recipe.theme}</p>
-                    </br>
+                    <span class="bold-text">Ingrediants:</span>
                     <p>${recipe.ingredients}</p>
                     </br>
+                    <span class="bold-text">Instructions:</span> 
                     <p>${recipe.instructions}</p>
                   </div>
                 </div>

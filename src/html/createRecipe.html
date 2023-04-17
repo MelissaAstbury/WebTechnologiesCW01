@@ -11,14 +11,17 @@
     <meta property="og:type" content="website" />
     <meta content="Create your own recipe" name="description" />
     <meta property="og:description" content="Create your own recipe" />
-    <meta property="og:image" content="https://melissaastbury.github.io/WebTechnologiesCW01/assets/images/asian.jpeg" />
+    <meta
+      property="og:image"
+      content="https://melissaastbury.github.io/WebTechnologiesCW01/assets/images/asian.jpeg"
+    />
 
     <link rel="stylesheet" href="../css/index.css" />
     <link rel="stylesheet" href="../css/createRecipe.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap"
       rel="stylesheet"
     />
     <script
@@ -35,7 +38,11 @@
         <nav class="navigation">
           <ul>
             <li><a href="./allRecipes.html">All Recipes</a></li>
-            <li><a href="./yourRecipes.html" id="your-recipes-nav">Your Recipes</a></li>
+            <li>
+              <a href="./yourRecipes.html" id="your-recipes-nav"
+                >Your Recipes</a
+              >
+            </li>
             <li><button id="login">Login</button></li>
             <li><button id="logout">Logout</button></li>
           </ul>
@@ -47,80 +54,115 @@
         <h1>Create your own recipe</h1>
         <form id="recipe-form" class="form-container">
           <label for="name" class="label-name"
-            >Recipe name: <input type="text" id="name" name="name" value="Chilli Nachos"
+            >Recipe name:
+            <input type="text" id="name" name="name" value="Chilli Nachos"
           /></label>
-          <label for="theme" class="label-name">Theme:</label>
-          <select name="theme" id="theme">
-            <option value="asian">Asian</option>
-            <option value="beef">Beef</option>
-            <option value="dessert">Desserts</option>
-            <option value="chicken">Chicken</option>
-            <option value="indian">Indian</option>
-            <option value="fish">Fish</option>
-            <option value="italian">Italian</option>
-            <option value="vegetarian">Vegetarian</option>
-          </select>
           <label for="ingredients" class="label-name"
             >Ingredients:
-            <input type="text" id="ingredients" name="ingredients" value="Nachos Cheese Beans"
+            <input
+              type="text"
+              id="ingredients"
+              name="ingredients"
+              value="Nachos Cheese Beans"
           /></label>
-          <label for="instructions" class="label-name"></label>
+          <label for="instructions" class="label-name">
             Instructions:
-            <textarea 
-            type="text"
-            id="instructions"
-            name="instructions"
-            class="text-box">
-            </textarea>
+            <textarea
+              type="text"
+              id="instructions"
+              name="instructions"
+              class="text-box"
+            ></textarea>
+          </label>
+          <label for="theme" class="label-name"
+            >Theme:
+            <select name="theme" id="theme">
+              <option value="asian">Asian</option>
+              <option value="beef">Beef</option>
+              <option value="dessert">Desserts</option>
+              <option value="chicken">Chicken</option>
+              <option value="indian">Indian</option>
+              <option value="fish">Fish</option>
+              <option value="italian">Italian</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="nutfree">Nut free</option>
+              <option value="dairyfree">Dairy free</option>
+            </select>
+          </label>
+          <label for="food-image" class="label-name">Cover photo:</label>
           <article class="image-selection">
-            <label for="images" class="label-name"></label>
-                <input type="radio" id="asian" name="food-image" value="asian.jpeg" checked>
-                <img class="image" src="../../assets/images/asian.jpeg" alt="Asian Foods">
-                <input type="radio" id="beef" name="food-image" value="beef.jpeg">
-                <img class="image" src="../../assets/images/beef.jpeg" alt="Beef Foods">
-                <input type="radio" id="biscuits" name="food-image" value="biscuits.jpg">
-                <img class="image" src="../../assets/images/biscuits.jpg" alt="Biscuits">
-                <input type="radio" id="cakes" name="food-image" value="cakes.jpeg">
-                <img class="image" src="../../assets/images/cakes.jpeg" alt="Cakes">
-                <input type="radio" id="chicken" name="food-image" value="chicken.webp">
-                <img class="image" src="../../assets/images/chicken.webp" alt="Chicken Foods">
-                <input type="radio" id="indian" name="food-image" value="curry.jpeg">
-                <img class="image" src="../../assets/images/curry.jpeg" alt="Indian Foods">
-                <input type="radio" id="fish" name="food-image" value="fish.jpeg">
-                <img class="image" src="../../assets/images/fish.jpeg" alt="Fish Foods">
-                <input type="radio" id="italian" name="food-image" value="italian.jpeg">
-                <img class="image" src="../../assets/images/italian.jpeg" alt="Italian Foods">
-                <input type="radio" id="vegetarian" name="food-image" value="vegetarian.webp">
-                <img class="image" src="../../assets/images/vegetarian.webp" alt="Vegetarian Foods">
+            <input
+              type="radio"
+              id="asian"
+              name="food-image"
+              value="asian.jpeg"
+              checked
+            />
+            <input type="radio" id="beef" name="food-image" value="beef.jpeg" />
+            <input
+              type="radio"
+              id="biscuits"
+              name="food-image"
+              value="biscuits.jpg"
+            />
+
+            <input
+              type="radio"
+              id="cakes"
+              name="food-image"
+              value="cakes.jpeg"
+            />
+
+            <input
+              type="radio"
+              id="chicken"
+              name="food-image"
+              value="chicken.webp"
+            />
+
+            <input
+              type="radio"
+              id="indian"
+              name="food-image"
+              value="curry.jpeg"
+            />
+
+            <input type="radio" id="fish" name="food-image" value="fish.jpeg" />
+
+            <input
+              type="radio"
+              id="italian"
+              name="food-image"
+              value="italian.jpeg"
+            />
+
+            <input
+              type="radio"
+              id="vegetarian"
+              name="food-image"
+              value="vegetarian.webp"
+            />
           </article>
-          <label for="allergies" class="label-name">Allergies:
-          <input
-            type="checkbox"
-            id="dairy-allergy"
-            name="dairy-allergy"
-            value="Dairy"
-          />Dairy Free<br />
-          <input
-            type="checkbox"
-            id="nut-allergy"
-            name="nut-allergy"
-            value="Nut"
-            checked
-          />Nut Free</label>
-          <label for="sharing-policy" class="label-name">Sharing Policy:
-          <input
-            type="checkbox"
-            id="public-sharing"
-            name="public-sharing"
-            value="Public"
-            checked
-          />Public<br />
-          <input
-            type="checkbox"
-            id="private-sharing"
-            name="private-sharing"
-            value="Private"
-          />Private</label>
+          <label for="sharing-policy" class="sharing-policy">
+            Public
+            <input
+              type="radio"
+              id="public"
+              name="sharing-policy"
+              value="public"
+              checked
+            />
+          </label>
+
+          <label for="sharing-policy" class="sharing-policy">
+            Private
+            <input
+              type="radio"
+              id="private"
+              name="sharing-policy"
+              value="private"
+            />
+          </label>
           <button class="save-btn" type="submit">Save Recipe</button>
         </form>
       </section>
