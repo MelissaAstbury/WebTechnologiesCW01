@@ -1,4 +1,4 @@
-import { get, getDatabase, ref } from 'firebase/database';
+import { get, getDatabase, ref, update } from 'firebase/database';
 import { onGetUser } from './auth';
 
 // Created a recipe interface to use around the application.
@@ -83,8 +83,10 @@ get(recipesRef)
             themeSelected === recipe.theme &&
             recipe.sharingPolicy === 'public'
           ) {
-            document.getElementById(themeSelected)!.style.textDecoration = 'underline';
-            document.getElementById(themeSelected)!.style.backgroundColor = '#0333';
+            document.getElementById(themeSelected)!.style.textDecoration =
+              'underline';
+            document.getElementById(themeSelected)!.style.backgroundColor =
+              '#0333';
             document.getElementById('all-recipes')!.innerHTML += `
             <div class="recipe-item">
               <img
@@ -106,8 +108,10 @@ get(recipesRef)
             recipe.sharingPolicy === 'private' &&
             recipe.publisher === userEmail
           ) {
-            document.getElementById(themeSelected)!.style.textDecoration = 'underline';
-            document.getElementById(themeSelected)!.style.backgroundColor = '#0333';
+            document.getElementById(themeSelected)!.style.textDecoration =
+              'underline';
+            document.getElementById(themeSelected)!.style.backgroundColor =
+              '#0333';
             document.getElementById('all-recipes')!.innerHTML += `
             <div class="recipe-item">
               <img
@@ -187,6 +191,13 @@ get(recipesRef)
                     </br>
                     <span class="bold-text">Instructions:</span> 
                     <p>${recipe.instructions}</p>
+                    <br />
+                    <p>${recipe.votes} people like this recipe</p>
+                    <button id="vote-btn">
+                      <span id="heart-icon" style="color: black;">
+                        <i class="fa-regular fa-heart fa-xl"></i>
+                      </span>
+                    </button>
                   </div>
                 </div>
               `;
@@ -209,9 +220,35 @@ get(recipesRef)
             } else {
               document.getElementById('share-button')!.style.display = 'none';
             }
+
+            if (document.getElementById('vote-btn')) {
+              // Has the recipe already been liked by the user?
+              // && localStorage.likedRecipes.includes(recipe.id)
+              if (localStorage.getItem('liked')) {
+                document.getElementById('heart-icon')!.style.color = 'red';
+              }
+              // likedItems.push(recipe.id);
+              // localStorage.setItem('likedRecipe', JSON.stringify(likedItems));
+              //likedItems.push(recipe.id);
+              // localStorage.setItem('likedRecipes', recipe.id);
+              // let res = localStorage.getItem("likedRecipes");
+              // console.log(res);
+            }
+            // Not yet liked by the user and therefore, can like at any point.
+            document
+              .getElementById('vote-btn')!
+              .addEventListener('click', () => {
+                document.getElementById('heart-icon')!.style.color = 'red';
+                // Update database votes for the recipe
+                var updates = {
+                  votes: recipe.votes + 1,
+                };
+                update(ref(db, /recipes/ + recipe.id), updates);
+                // Reload to show the updated information
+                return window.location.reload();
+              });
           }
         }
-
         // Adding itteror count at the end.
         index++;
       }
