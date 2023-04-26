@@ -1,0 +1,9 @@
+.create-recipe-btn {
+    background-color: rgb(156, 149, 150);
+}
+
+@media screen and (max-width: 420px) {
+    .create-recipe-btn {
+        margin: 0 12px;
+    }
+}

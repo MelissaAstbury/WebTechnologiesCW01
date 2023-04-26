@@ -1,0 +1,33 @@
+.nested-navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nested-navigation a {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background-color: rgb(226, 219, 220);
+}
+
+.nested-navigation a:hover{
+  background-color: rgb(210, 208, 208);
+}
+
+.allergy-container {
+  display: flex;
+  gap: 12px;
+  justify-content: start;
+}
+
+.allergy-container p {
+  font-weight: 600;
+}
+
+@media screen and (max-width: 420px) {
+  .nested-navigation {
+    display: grid;
+    grid-template-columns: auto auto auto ;
+    padding: 0 12px;
+  }
+}

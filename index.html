@@ -4,46 +4,42 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebTechnologiesCW01</title>
-    <meta property="og:site_name" content="WebTechnologiesCW01" />
+    <title>Peliza Recipes Home</title>
+    <meta property="og:title" content="Peliza Recipes Home" />
+    <meta property="og:site_name" content="Peliza Recipes" />
     <meta property="og:locale" content="en-GB" />
     <meta property="og:type" content="website" />
-    <meta content="Melissa Peliza WebTechnologiesCW01" name="description" />
-    <meta property="og:title" content="WebTechnologiesCW01" />
+    <meta content="Peliza Recipes home page" name="description" />
     <meta
       property="og:description"
-      content="Melissa Peliza WebTechnologiesCW01"
+      content="Peliza Recipes home page"
     />
-    <meta property="og:image" content="img" />
+    <meta property="og:image" content="https://melissaastbury.github.io/WebTechnologiesCW01/assets/images/asian.webp" />
 
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="./src/css/index.css" />
+    <link rel="stylesheet" href="./src/css/recipes.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <script
       src="https://kit.fontawesome.com/4efb59b925.js"
       crossorigin="anonymous"
     ></script>
-    <!-- <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
-      rel="stylesheet"
-      crossorigin="anonymous"
-    /> -->
-    <!-- <link rel="stylesheet" href="https://kit.fontawesome.com/4efb59b925.css" crossorigin="anonymous"> -->
 
-    <script src="index.js" defer></script>
+    <script src="./dist/index.js" defer></script>
   </head>
   <body>
     <header>
-      <div class="wrapper contents-container">
-        <p class="title">Peliza Recipes</p>
+      <div>
+        <a href="./index.html">Peliza Recipes</a>
         <nav class="navigation">
           <ul>
-            <li><a href="./allRecipes.html">All Recipes</a></li>
-            <li><a href="./login.html">Login</a></li>
+            <li><a href="./src/html/allRecipes.html">All Recipes</a></li>
+            <li><a href="./src/html/yourRecipes.html" id="your-recipes-nav">Your Recipes</a></li>
+            <li><button id="login" type="button">Login</button></li>
+            <li><button id="logout" type="button">Logout</button></li>
           </ul>
         </nav>
       </div>
@@ -51,82 +47,11 @@
     <main>
       <section class="wrapper">
         <h1>Your Finest Foods</h1>
-        <article class="recipes-container">
-          <div class="recipe-item">
-            <span style="color: rgb(212, 42, 12)">
-              <i class="fa-solid fa-heart fa-lg"></i>
-            </span>
-            <img
-              src="./assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="./assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="./assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="./assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="./assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
-          <div class="recipe-item">
-            <i class="fa-regular fa-heart fa-lg"></i>
-            <img
-              src="./assets/images/pizza.jpg"
-              alt="Pizza"
-              class="recipe-item-image"
-            />
-            <div>
-              <h3>Pizza</h3>
-              <p>Time: 30mins</p>
-            </div>
-          </div>
+        <article class="recipes-container" id="home-recipes">
         </article>
+        <div id="page-spinner" role="timer" aria-label="loading spinner">
+          <span class="loader" id="loading-spinner"></span>
+        </div>
       </section>
     </main>
   </body>

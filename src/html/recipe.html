@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe</title>
+    <meta property="og:title" content="Recipe" />
+    <meta property="og:site_name" content="Peliza Recipes" />
+    <meta property="og:locale" content="en-GB" />
+    <meta property="og:type" content="website" />
+    <meta content="Browse all receipes" name="description" />
+    <meta property="og:description" content="Browse all receipes" />
+    <meta
+      property="og:image"
+      content="https://melissaastbury.github.io/WebTechnologiesCW01/assets/images/asian.webp"
+    />
+
+    <link rel="stylesheet" href="../css/index.css" />
+    <link rel="stylesheet" href="../css/recipes.css" />
+    <link rel="stylesheet" href="../css/allRecipes.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      src="https://kit.fontawesome.com/4efb59b925.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="../../dist/index.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a href="../../index.html">Peliza Recipes</a>
+        <nav class="navigation">
+          <ul>
+            <li><a href="./allRecipes.html">All Recipes</a></li>
+            <li>
+              <a href="./yourRecipes.html" id="your-recipes-nav"
+                >Your Recipes</a
+              >
+            </li>
+            <li><button id="login">Login</button></li>
+            <li><button id="logout">Logout</button></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main id="recipe-container">
+      <section class="wrapper">
+        <h1>Explore great food</h1>
+        <article id="recipe"></article>
+        <div id="page-spinner" role="timer" aria-label="loading spinner">
+          <span class="loader" id="loading-spinner"></span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
