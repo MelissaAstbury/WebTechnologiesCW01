@@ -64,9 +64,7 @@ nav ul li button {
   align-items: center;
 }
 
-/* 
-    Reusable classes
-*/
+/* Reusable classes */
 .wrapper {
   max-width: 1280px;
   margin: 40px auto;
@@ -129,3 +127,26 @@ nav ul li button {
     clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 0);
   }
 }
+
+@media screen and (max-width: 420px) {
+  .wrapper {
+    max-width: 380px;
+  }
+
+  header {
+    font-size: 14px;
+  }
+
+  header div {
+    justify-content: space-around;
+  }
+
+  header ul {
+    gap: 6px;
+  }
+
+  header div nav ul li button {
+    font-size: 14px;
+  }
+}
+
