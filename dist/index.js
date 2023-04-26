@@ -16004,6 +16004,13 @@
                     </br>
                     <span class="bold-text">Instructions:</span> 
                     <p>${recipe.instructions}</p>
+                    <br />
+                    <p>${recipe.votes} people like this recipe</p>
+                    <button id="vote-btn">
+                      <span id="heart-icon" style="color: black;">
+                        <i class="fa-regular fa-heart fa-xl"></i>
+                      </span>
+                    </button>
                   </div>
                 </div>
               `;
@@ -16021,6 +16028,19 @@
             } else {
               document.getElementById("share-button").style.display = "none";
             }
+            if (document.getElementById("vote-btn")) {
+              if (localStorage.getItem("liked")) {
+                document.getElementById("heart-icon").style.color = "red";
+              }
+            }
+            document.getElementById("vote-btn").addEventListener("click", () => {
+              document.getElementById("heart-icon").style.color = "red";
+              var updates = {
+                votes: recipe.votes + 1
+              };
+              update(ref(db2, /recipes/ + recipe.id), updates);
+              return window.location.reload();
+            });
           }
         }
         index++;

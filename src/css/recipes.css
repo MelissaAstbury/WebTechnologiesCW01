@@ -90,3 +90,14 @@
   background-color: rgb(190, 190, 188);
   color: 'black';
 }
+
+@media screen and (max-width: 420px) {
+  .recipes-container {
+    grid-template-columns: auto;
+    padding: 0 12px
+  }
+
+  h1 {
+    padding-left: 12px;
+  }
+}
