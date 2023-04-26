@@ -222,19 +222,10 @@ get(recipesRef)
             }
 
             if (document.getElementById('vote-btn')) {
-              // Has the recipe already been liked by the user?
-              // && localStorage.likedRecipes.includes(recipe.id)
               if (localStorage.getItem('liked')) {
                 document.getElementById('heart-icon')!.style.color = 'red';
               }
-              // likedItems.push(recipe.id);
-              // localStorage.setItem('likedRecipe', JSON.stringify(likedItems));
-              //likedItems.push(recipe.id);
-              // localStorage.setItem('likedRecipes', recipe.id);
-              // let res = localStorage.getItem("likedRecipes");
-              // console.log(res);
             }
-            // Not yet liked by the user and therefore, can like at any point.
             document
               .getElementById('vote-btn')!
               .addEventListener('click', () => {
