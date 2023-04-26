@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 const db = getDatabase();
 
 // Send values to firebase database
-function sendRecipeData(
+async function sendRecipeData(
   publisher: string,
   name: string,
   theme: string,
@@ -16,7 +16,7 @@ function sendRecipeData(
   sharingPolicy: string
 ) {
   const id = uuidv4();
-  update(ref(db, 'recipes/' + id), {
+  await update(ref(db, 'recipes/' + id), {
     id,
     publisher,
     name,
@@ -70,7 +70,7 @@ export const createRecipe = (e: Event) => {
       sharingPolicy = 'private';
     }
 
-    // Send values to firebase database
+    //Send values to firebase database
     sendRecipeData(
       publisher!,
       name.value,
@@ -81,6 +81,7 @@ export const createRecipe = (e: Event) => {
       sharingPolicy
     );
   } catch (error) {
+    alert('There was an error creating your recipe');
     console.warn(error, 'There was an error creating your recipe');
   }
 };

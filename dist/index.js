@@ -10341,11 +10341,11 @@
       this.prevName = prevName;
     }
     getPath() {
-      const ref3 = this.snapshot.ref;
+      const ref2 = this.snapshot.ref;
       if (this.eventType === "value") {
-        return ref3._path;
+        return ref2._path;
       } else {
-        return ref3.parent._path;
+        return ref2.parent._path;
       }
     }
     getEventType() {
@@ -10454,11 +10454,11 @@
       return parentPath === null ? null : new ReferenceImpl(this._repo, parentPath);
     }
     get root() {
-      let ref3 = this;
-      while (ref3.parent !== null) {
-        ref3 = ref3.parent;
+      let ref2 = this;
+      while (ref2.parent !== null) {
+        ref2 = ref2.parent;
       }
-      return ref3;
+      return ref2;
     }
   };
   var DataSnapshot = class {
@@ -10468,9 +10468,9 @@
      * @param _index - The iteration order for this snapshot
      * @hideconstructor
      */
-    constructor(_node, ref3, _index) {
+    constructor(_node, ref2, _index) {
       this._node = _node;
-      this.ref = ref3;
+      this.ref = ref2;
       this._index = _index;
     }
     /**
@@ -10630,10 +10630,10 @@
     }
     return new ReferenceImpl(parent._repo, pathChild(parent._path, path));
   }
-  function update(ref3, values) {
-    validateFirebaseMergeDataArg("update", values, ref3._path, false);
+  function update(ref2, values) {
+    validateFirebaseMergeDataArg("update", values, ref2._path, false);
     const deferred = new Deferred();
-    repoUpdate(ref3._repo, ref3._path, values, deferred.wrapCallback(() => {
+    repoUpdate(ref2._repo, ref2._path, values, deferred.wrapCallback(() => {
     }));
     return deferred.promise;
   }
@@ -15785,8 +15785,21 @@
   // src/ts/form.ts
   var db = getDatabase();
   function sendRecipeData(publisher, name5, theme, ingredients, instructions, image, sharingPolicy) {
-    const id = v4_default();
-    window.location.href = "./yourRecipes.html";
+    return __async(this, null, function* () {
+      const id = v4_default();
+      yield update(ref(db, "recipes/" + id), {
+        id,
+        publisher,
+        name: name5,
+        theme,
+        ingredients,
+        instructions,
+        image,
+        sharingPolicy,
+        votes: 0
+      });
+      window.location.href = "./yourRecipes.html";
+    });
   }
   var createRecipe = (e) => {
     try {
@@ -15832,6 +15845,7 @@
         sharingPolicy
       );
     } catch (error2) {
+      alert("There was an error creating your recipe");
       console.warn(error2, "There was an error creating your recipe");
     }
   };

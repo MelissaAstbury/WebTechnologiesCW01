@@ -55,7 +55,7 @@
         <form id="recipe-form" class="form-container">
           <label for="name" class="label-name"
             >Recipe name:
-            <input type="text" id="name" name="name" value=""
+            <input type="text" id="name" name="name" value="" required
           /></label>
           <label for="ingredients" class="label-name"
             >Ingredients:
@@ -64,6 +64,7 @@
               id="ingredients"
               name="ingredients"
               value=""
+              required
           /></label>
           <label for="instructions" class="label-name">
             Instructions:
@@ -72,6 +73,7 @@
               id="instructions"
               name="instructions"
               class="text-box"
+              required
             ></textarea>
           </label>
           <label for="theme" class="label-name"
@@ -98,7 +100,13 @@
               value="asian.webp"
               checked
             />
-            <input type="radio" id="beef" name="food-image" value="beef.webp" />
+            <input 
+              type="radio" 
+              id="beef" 
+              name="food-image" 
+              value="beef.webp" 
+            />
+
             <input
               type="radio"
               id="biscuits"
@@ -127,7 +135,12 @@
               value="curry.webp"
             />
 
-            <input type="radio" id="fish" name="food-image" value="fish.webp" />
+            <input 
+              type="radio" 
+              id="fish" 
+              name="food-image" 
+              value="fish.webp" 
+            />
 
             <input
               type="radio"
@@ -150,6 +163,7 @@
               id="public"
               name="sharing-policy"
               value="public"
+              checked
             />
           </label>
 
