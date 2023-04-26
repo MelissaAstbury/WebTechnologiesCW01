@@ -10341,11 +10341,11 @@
       this.prevName = prevName;
     }
     getPath() {
-      const ref2 = this.snapshot.ref;
+      const ref3 = this.snapshot.ref;
       if (this.eventType === "value") {
-        return ref2._path;
+        return ref3._path;
       } else {
-        return ref2.parent._path;
+        return ref3.parent._path;
       }
     }
     getEventType() {
@@ -10454,11 +10454,11 @@
       return parentPath === null ? null : new ReferenceImpl(this._repo, parentPath);
     }
     get root() {
-      let ref2 = this;
-      while (ref2.parent !== null) {
-        ref2 = ref2.parent;
+      let ref3 = this;
+      while (ref3.parent !== null) {
+        ref3 = ref3.parent;
       }
-      return ref2;
+      return ref3;
     }
   };
   var DataSnapshot = class {
@@ -10468,9 +10468,9 @@
      * @param _index - The iteration order for this snapshot
      * @hideconstructor
      */
-    constructor(_node, ref2, _index) {
+    constructor(_node, ref3, _index) {
       this._node = _node;
-      this.ref = ref2;
+      this.ref = ref3;
       this._index = _index;
     }
     /**
@@ -10630,10 +10630,10 @@
     }
     return new ReferenceImpl(parent._repo, pathChild(parent._path, path));
   }
-  function update(ref2, values) {
-    validateFirebaseMergeDataArg("update", values, ref2._path, false);
+  function update(ref3, values) {
+    validateFirebaseMergeDataArg("update", values, ref3._path, false);
     const deferred = new Deferred();
-    repoUpdate(ref2._repo, ref2._path, values, deferred.wrapCallback(() => {
+    repoUpdate(ref3._repo, ref3._path, values, deferred.wrapCallback(() => {
     }));
     return deferred.promise;
   }
@@ -15786,17 +15786,7 @@
   var db = getDatabase();
   function sendRecipeData(publisher, name5, theme, ingredients, instructions, image, sharingPolicy) {
     const id = v4_default();
-    update(ref(db, "recipes/" + id), {
-      id,
-      publisher,
-      name: name5,
-      theme,
-      ingredients,
-      instructions,
-      image,
-      sharingPolicy,
-      votes: 0
-    });
+    window.location.href = "./yourRecipes.html";
   }
   var createRecipe = (e) => {
     try {
@@ -15806,22 +15796,24 @@
         return;
       }
       const publisher = onGetUser().email;
-      const theme = document.getElementById("theme");
       const name5 = document.getElementById("name");
+      const instructions = document.getElementById(
+        "instructions"
+      );
       const ingredients = document.getElementById(
         "ingredients"
       );
-      const instructions = document.getElementById(
-        "instructions"
+      const theme = document.querySelector(
+        "select[name='theme']"
       );
       const image = document.querySelector(
         "input[type='radio'][name='food-image']:checked"
       );
       const publicSharing = document.getElementById(
-        "public-sharing"
+        "public"
       );
       const privateSharing = document.getElementById(
-        "private-sharing"
+        "private"
       );
       let sharingPolicy = "";
       if (publicSharing.checked) {

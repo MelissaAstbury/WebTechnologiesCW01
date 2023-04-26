@@ -27,9 +27,10 @@ function sendRecipeData(
     sharingPolicy,
     votes: 0,
   });
+  window.location.href = "./yourRecipes.html"
 }
 
-// Funxtionlity to submit for to firebase database
+// Functionlity to submit for to firebase database
 export const createRecipe = (e: Event) => {
   try {
     // Prevent broswer default behaviour
@@ -41,25 +42,26 @@ export const createRecipe = (e: Event) => {
     }
     // Get values from form
     const publisher = onGetUser().email;
-    const theme = document.getElementById('theme') as HTMLInputElement;
     const name = document.getElementById('name') as HTMLInputElement;
-    const ingredients = document.getElementById(
-      'ingredients'
-    ) as HTMLInputElement;
     const instructions = document.getElementById(
       'instructions'
     ) as HTMLInputElement;
+    const ingredients = document.getElementById(
+      'ingredients'
+    ) as HTMLInputElement;
+    const theme = document.querySelector(
+      "select[name='theme']"
+    ) as HTMLInputElement;
     const image = document.querySelector(
       "input[type='radio'][name='food-image']:checked"
-    ) as HTMLInputElement;
-    const publicSharing = document.getElementById(
-      'public-sharing'
+      ) as HTMLInputElement;
+      const publicSharing = document.getElementById(
+      'public'
     ) as HTMLInputElement;
     const privateSharing = document.getElementById(
-      'private-sharing'
+      'private'
     ) as HTMLInputElement;
 
-    // push information into array
     let sharingPolicy = '';
     if (publicSharing.checked) {
       sharingPolicy = 'public';
